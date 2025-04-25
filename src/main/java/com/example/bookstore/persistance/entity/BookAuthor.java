@@ -1,0 +1,28 @@
+package com.example.bookstore.persistance.entity;
+
+import com.example.bookstore.enums.AuthorRole;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+@Entity
+@Table(name = "book_author", uniqueConstraints = {@UniqueConstraint(columnNames = {"book_id", "author_id", "author_role"})})
+@Getter
+@Setter
+public class BookAuthor {
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "book_author_id_seq")
+    @SequenceGenerator(name = "book_author_id_seq", sequenceName = "book_author_id_seq", allocationSize = 50)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="book_id")
+    private Book book;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="author_id")
+    private Author author;
+
+    @Column(name = "author_role")
+    @Enumerated(EnumType.STRING)
+    private AuthorRole authorRole;}

@@ -1,0 +1,18 @@
+package com.example.bookstore.enums;
+
+public enum Format {
+
+    HARDCOVER, PAPERBACK,
+    MASS_MARKET_PAPERBACK,
+    KINDLE_EDITION, LEATHER_BOUND,
+    AUDIO_CASSETTE, AUDIO_CD,
+    AUDIO, EBOOK, KINDLE,
+    PDF, BROCHURA, PAPER,
+    BONDED_LEATHER, SOFTCOVER,
+    ALBUM, COMIC, WEB, DIARY,
+    TURTLEBACK, WATTPAD,
+    OTHER
+
+
+
+}
