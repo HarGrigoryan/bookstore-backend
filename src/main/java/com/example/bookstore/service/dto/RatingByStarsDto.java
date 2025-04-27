@@ -1,4 +1,4 @@
-package com.example.bookstore.service.projections;
+package com.example.bookstore.service.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
