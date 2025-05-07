@@ -1,6 +1,5 @@
 package com.example.bookstore.service.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,7 +14,6 @@ public class SeriesDTO {
 
     private Long id;
 
-    @NotBlank
     private String name;
 
 }
