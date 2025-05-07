@@ -10,7 +10,6 @@ import com.example.bookstore.persistance.repository.*;
 import com.example.bookstore.service.criteria.BookSearchCriteria;
 import com.example.bookstore.service.dto.*;
 import com.example.bookstore.service.mapper.BookCreateResponseDtoMapper;
-import com.example.bookstore.service.mapper.BookReviewResponseMapper;
 import com.example.bookstore.service.dto.AuthorResponseDTO;
 import com.example.bookstore.service.dto.BookCreateDTO;
 import com.example.bookstore.service.dto.BookUpdateRequestDTO;
@@ -244,7 +243,7 @@ public class BookService {
         reviews.setLikedPercent(bookReviewDto.getLikedPercent());
         reviews.setRating(bookReviewDto.getRating());
         reviewsRepository.save(reviews);
-        return (new BookReviewResponseMapper()).map(reviews);
+        return BookReviewResponseDTO.mapToDTO(reviews);
     }
 
     public PageResponseDTO<BookSearchResponseDTO> getAll(BookSearchCriteria criteria) {
