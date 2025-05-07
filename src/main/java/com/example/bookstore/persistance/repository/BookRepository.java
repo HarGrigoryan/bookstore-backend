@@ -3,7 +3,7 @@ package com.example.bookstore.persistance.repository;
 import com.example.bookstore.persistance.entity.Book;
 import com.example.bookstore.service.criteria.BookSearchCriteria;
 import com.example.bookstore.service.dto.BookSearchResponseDTO;
-import com.example.bookstore.service.projections.AuthorDtoProjection;
+import com.example.bookstore.service.dto.AuthorResponseDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,11 +22,11 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query(value = "SELECT book_id FROM book", nativeQuery = true)
     Set<String> findAllBookId();
 
-    @Query("SELECT new com.example.bookstore.service.projections.AuthorDtoProjection(" +
+    @Query("SELECT new com.example.bookstore.service.dto.AuthorResponseDTO(" +
             "a.id, a.fullName, a.isOnGoodreads, ba.authorRole) " +
             "FROM BookAuthor ba JOIN ba.author a " +
             "WHERE ba.book.id = :id")
-    List<AuthorDtoProjection> findAuthors(Long id);
+    List<AuthorResponseDTO> findAuthors(Long id);
 
     @Query("""
     SELECT DISTINCT new com.example.bookstore.service.dto.BookSearchResponseDTO(
