@@ -1,7 +1,7 @@
 package com.example.bookstore.service.parser;
 
 import com.example.bookstore.service.dto.SeriesDTO;
-import com.example.bookstore.service.exception.UnsupportedFormatException;
+import com.example.bookstore.exception.UnsupportedFormatException;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
