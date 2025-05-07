@@ -1,6 +1,6 @@
 package com.example.bookstore.service.parser;
 
-import com.example.bookstore.service.exception.UnsupportedFormatException;
+import com.example.bookstore.exception.UnsupportedFormatException;
 
 import java.time.LocalDate;
 import java.time.Month;
