@@ -3,6 +3,8 @@ package com.example.bookstore.persistance.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Table(name = "reviews")
@@ -16,6 +18,7 @@ public class Reviews {
 
     @JoinColumn(name = "book_id")
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Book book;
 
     @Column(name = "rating", columnDefinition = "REAL CHECK (rating BETWEEN 0 AND 5)")

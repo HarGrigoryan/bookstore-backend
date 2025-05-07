@@ -24,7 +24,7 @@ public class BookCoverImage {
     @JoinColumn(name = "book_id")
     private Book book;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "file_information_id")
     private FileInformation fileInformation;
 

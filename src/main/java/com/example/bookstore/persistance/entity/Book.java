@@ -65,26 +65,32 @@ public class Book {
     @Column(name = "price", precision = 10, scale = 2)
     private BigDecimal price;
 
-    @OneToMany(mappedBy = "book", cascade = CascadeType.MERGE)
+    @OneToMany(mappedBy = "book", cascade = {CascadeType.REMOVE, CascadeType.MERGE})
+    private List<BookInstance> copies = new ArrayList<>();
+
+    @OneToMany(mappedBy = "book", cascade = {CascadeType.MERGE, CascadeType.REMOVE})
     private List<BookGenre> genres = new ArrayList<>();
 
-    @OneToMany(mappedBy = "book", cascade = CascadeType.MERGE)
+    @OneToMany(mappedBy = "book", cascade = {CascadeType.MERGE, CascadeType.REMOVE})
     private List<BookSetting> bookSettingList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "book", cascade = CascadeType.MERGE)
+    @OneToMany(mappedBy = "book", cascade = {CascadeType.MERGE, CascadeType.REMOVE})
     private List<BookSeries> bookSeriesList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "book", cascade = CascadeType.MERGE)
+    @OneToMany(mappedBy = "book", cascade = {CascadeType.MERGE, CascadeType.REMOVE})
     private List<BookCharacter> bookCharacterList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "book", cascade = CascadeType.MERGE)
+    @OneToMany(mappedBy = "book", cascade = {CascadeType.MERGE, CascadeType.REMOVE})
     private List<BookAuthor> authors = new ArrayList<>();
 
-    @OneToMany(mappedBy = "book", cascade = CascadeType.MERGE)
+    @OneToMany(mappedBy = "book", cascade = {CascadeType.MERGE, CascadeType.REMOVE})
     private List<BookAward> awards = new ArrayList<>();
 
-    @OneToMany(mappedBy = "book", cascade = CascadeType.PERSIST)
+    @OneToMany(mappedBy = "book", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     private List<RatingByStars> ratingsByStars = new ArrayList<>();
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.REMOVE)
+    private List<BookCoverImage> coverImages = new ArrayList<>();
 
     public void addRatingByStars(Star star, Integer starNumber, Integer totalNumberOfRatings) {
         RatingByStars ratingByStars = new RatingByStars();
