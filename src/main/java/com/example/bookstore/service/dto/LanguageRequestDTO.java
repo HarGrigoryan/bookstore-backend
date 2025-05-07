@@ -1,20 +1,20 @@
 package com.example.bookstore.service.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
-public class CharacterDTO {
 
-    private Long id;
+public class LanguageRequestDTO {
 
-    private String fullName;
+    @NotBlank
+    private String name;
 
-    private String comment;
 
 }
