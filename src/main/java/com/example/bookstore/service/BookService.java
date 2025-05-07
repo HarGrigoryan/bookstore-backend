@@ -11,7 +11,7 @@ import com.example.bookstore.service.criteria.BookSearchCriteria;
 import com.example.bookstore.service.dto.*;
 import com.example.bookstore.service.mapper.BookCreateResponseDtoMapper;
 import com.example.bookstore.service.mapper.BookReviewResponseMapper;
-import com.example.bookstore.service.projections.AuthorDtoProjection;
+import com.example.bookstore.service.dto.AuthorResponseDTO;
 import com.example.bookstore.service.dto.BookCreateDTO;
 import com.example.bookstore.service.dto.BookUpdateRequestDTO;
 import com.example.bookstore.util.Utilities;
@@ -222,7 +222,7 @@ public class BookService {
 
     }
 
-    public List<AuthorDtoProjection> getAuthors(Long id) {
+    public List<AuthorResponseDTO> getAuthors(Long id) {
         Book book = bookRepository.findById(id).orElse(null);
         if (book == null)
             throw new EntityNotFoundException("Book", id);
