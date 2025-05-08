@@ -40,12 +40,12 @@ public class BookController {
         return bookService.getBookByBookId(bookId);
     }
 
-    @GetMapping("/{id}/author")
+    @GetMapping("/{id}/authors")
     public List<AuthorResponseDTO> getAuthors(@PathVariable Long id) {
         return bookService.getAuthors(id);
     }
 
-    @GetMapping()
+    @GetMapping
     public PageResponseDTO<BookSearchResponseDTO> getAll(BookSearchCriteria criteria) {
         return bookService.getAll(criteria);
     }
@@ -63,7 +63,7 @@ public class BookController {
         bookService.deleteBookById(id);
     }
 
-    @DeleteMapping()
+    @DeleteMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAuthority('ROLE_MANAGER')")
     public void deleteBooks(@RequestBody List<Long> bookIds) {
@@ -84,7 +84,7 @@ public class BookController {
         return csvUploadService.uploadCSV(file);
     }
 
-    @PostMapping("/{id}")
+    @PostMapping("/{id}/review")
     @PreAuthorize("hasAuthority('ROLE_STAFF')")
     public BookReviewResponseDTO reviewBook(@PathVariable Long id, @RequestBody BookReviewDTO bookReviewDto) {
         return bookService.reviewBook(id, bookReviewDto);
@@ -95,7 +95,7 @@ public class BookController {
         return coverImageService.getImage(id, pictureSize);
     }
 
-    @PostMapping("/rate/{id}")
+    @PostMapping("{id}/rate")
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public Integer rate(@PathVariable Long id, @RequestParam(name = "starNumber") Integer starNumber) {
@@ -106,6 +106,5 @@ public class BookController {
     public List<BookSearchResponseDTO> getTopRatedBooks(@RequestParam(name="top") Integer top) {
         return ratingService.getTopRatedBooks(top);
     }
-
 
 }
