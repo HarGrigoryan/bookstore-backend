@@ -4,6 +4,9 @@ import lombok.RequiredArgsConstructor;
 import com.example.bookstore.security.util.JwtUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -33,6 +36,13 @@ public class SecurityConfiguration {
     private final JwtUtil jwtUtil;
 
     @Bean
+    public MethodSecurityExpressionHandler methodSecurityExpressionHandler(CustomPermissionEvaluator customPermissionEvaluator) {
+        DefaultMethodSecurityExpressionHandler expressionHandler = new DefaultMethodSecurityExpressionHandler();
+        expressionHandler.setPermissionEvaluator(customPermissionEvaluator);
+        return expressionHandler;
+    }
+
+    @Bean
     public RoleHierarchy roleHierarchy() {
         return RoleHierarchyImpl.fromHierarchy("ROLE_MANAGER > ROLE_STAFF");
     }
@@ -44,7 +54,7 @@ public class SecurityConfiguration {
 
     @Bean
     public AuthorizationFilter authorizationFilter() {
-        return new AuthorizationFilter(jwtUtil);
+        return new AuthorizationFilter(jwtUtil, userDetailsService);
     }
 
     @Bean
@@ -69,6 +79,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(
                         a ->
                                 a.requestMatchers("/auth/**").permitAll()
+                                        .requestMatchers(HttpMethod.GET, "/books").permitAll()
                                         .anyRequest()
                                         .fullyAuthenticated()
                 )

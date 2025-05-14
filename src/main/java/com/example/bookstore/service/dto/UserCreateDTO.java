@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.util.List;
+
 @Setter
 @Getter
 @AllArgsConstructor
@@ -28,5 +30,6 @@ public class UserCreateDTO {
     private boolean enabled = true;
 
     @NotBlank
-    private RoleName role;
+    private List<RoleName> roles;
+
 }

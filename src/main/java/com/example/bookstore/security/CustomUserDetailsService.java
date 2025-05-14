@@ -1,6 +1,5 @@
 package com.example.bookstore.security;
 
-import com.example.bookstore.persistance.entity.Role;
 import com.example.bookstore.persistance.entity.User;
 import com.example.bookstore.persistance.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +11,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -29,11 +27,7 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new LockedException("User is locked");
         }
 
-        final Role role = user.getRole();
-        return new org.springframework.security.core.userdetails.User(
-                user.getEmail(),
-                user.getPassword(),
-                List.of(new SimpleGrantedAuthority(role.getName().name()))
-        );
+        return new CustomUserDetails(user, userRepository.findAuthorities(user).stream()
+                .map(SimpleGrantedAuthority::new).toList());
     }
 }

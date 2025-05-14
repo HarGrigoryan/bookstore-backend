@@ -8,6 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
+import java.util.List;
 
 @Entity
 @Table(name = "'user'")
@@ -44,7 +45,7 @@ public class User {
     @UpdateTimestamp
     private Instant updatedAt;
 
-    @ManyToOne(cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "role_id", nullable = false)
-    private Role role;
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.MERGE, CascadeType.REMOVE})
+    private List<UserRole> roles;
+
 }

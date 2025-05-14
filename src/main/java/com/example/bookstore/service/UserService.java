@@ -1,14 +1,15 @@
 package com.example.bookstore.service;
 
+import com.example.bookstore.enums.PermissionName;
+import com.example.bookstore.enums.RoleName;
+import com.example.bookstore.exception.EntityAlreadyExistsException;
 import com.example.bookstore.exception.EntityNotFoundException;
+import com.example.bookstore.persistance.entity.*;
+import com.example.bookstore.persistance.repository.*;
 import com.example.bookstore.service.dto.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import com.example.bookstore.exception.ResourceAlreadyUsedException;
-import com.example.bookstore.persistance.entity.Role;
-import com.example.bookstore.persistance.entity.User;
-import com.example.bookstore.persistance.repository.RoleRepository;
-import com.example.bookstore.persistance.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,26 +22,30 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
+    private final UserRoleRepository userRoleRepository;
+    private final UserRolePermissionRepository userRolePermissionRepository;
+    private final PermissionRepository permissionRepository;
 
     @Transactional
     public UserDTO createUser(UserCreateDTO userCreateDTO) {
 
-        if (userRepository.existsByEmail(userCreateDTO.getEmail())) {
-            throw new ResourceAlreadyUsedException("User with this email already exists");
+        String email = userCreateDTO.getEmail().toLowerCase();
+        if (userRepository.existsByEmail(email)) {
+            throw new ResourceAlreadyUsedException("User with email [%s] already exists".formatted(email));
         }
 
-        final Role role = roleRepository.findByName(userCreateDTO.getRole())
-                .orElseThrow(() -> new EntityNotFoundException("Role not found"));
+        List<Role> roles = userCreateDTO.getRoles().stream()
+                .map(r -> roleRepository.findByName(r).orElseThrow(() -> new EntityNotFoundException("Role with name %s not found".formatted(r)))).toList();
 
         final User user = new User();
         user.setFirstname(userCreateDTO.getFirstname());
         user.setLastname(userCreateDTO.getLastname());
-        user.setEmail(userCreateDTO.getEmail());
+        user.setEmail(email);
         user.setPassword(passwordEncoder.encode(userCreateDTO.getTemporaryPassword()));
         user.setEnabled(true);
-        user.setRole(role);
-
-        return UserDTO.toDTO(userRepository.save(user));
+        userRepository.save(user);
+        roles.forEach(r -> assignRole(user, r));
+        return UserDTO.toDTO(user);
     }
 
     public List<UserDTO> getAllUsers() {
@@ -79,5 +84,49 @@ public class UserService {
         User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User with id '%s' not found".formatted(id)));
         user.setPassword(passwordEncoder.encode(userPasswordChangeRequestDTO.getNewPassword()));
         return UserDTO.toDTO(userRepository.save(user));
+    }
+
+    public void assignRole(User user, Role role)
+    {
+        UserRole userRole = userRoleRepository.findByUserAndRole(user, role);
+        if(userRole != null)
+            throw new EntityAlreadyExistsException("User with id [%s] already has the role [%s]".formatted(user.getId(), role.getName()));
+        userRole = new UserRole();
+        userRole.setUser(user);
+        userRole.setRole(role);
+        userRoleRepository.save(userRole);
+    }
+
+    public void addRole(Long userId, List<RoleName> roleNames) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User", userId));
+        List<Role> roles = roleNames.stream()
+                .map(roleName -> roleRepository.findByName(roleName).orElseThrow(() -> new EntityNotFoundException("Role with name %s not found".formatted(roleName))))
+                .toList();
+        roles.forEach(r -> assignRole(user, r));
+    }
+
+    public void addPermissions(Long id, PermissionUpdateRequestDTO permissionUpdateRequestDTO) {
+        RoleName roleName = permissionUpdateRequestDTO.getRoleName();
+        UserRole userRole = userRepository.findRole(id, roleName);
+        if(userRole == null) {
+            throw new EntityNotFoundException("User with id '%s' does not have an assigned role of '%s'".formatted(id, roleName));
+        }
+        List<PermissionName> permissionNames = permissionUpdateRequestDTO.getPermissionNames();
+        List<Permission> permissions = permissionNames.stream()
+                .map(p -> permissionRepository.findByName(p).orElseThrow( () -> new EntityNotFoundException("Permission with permission name [%s] does not exist.")))
+                .toList();
+        List<UserRolePermission> userRolePermissions = permissionNames.stream()
+                .map(p -> userRolePermissionRepository.findByUserIdAndRoleNameAndPermissionName(id, p, roleName).orElse(null))
+                .toList();
+        userRolePermissions.forEach(u-> {
+            if(u != null)
+                throw new EntityAlreadyExistsException("User with id [%s] already has permission [%s] defined for the role [%s]".formatted(id, u.getPermission().getName(), u.getUserRole().getRole().getName()));
+        });
+        permissions.forEach(permission -> {
+            UserRolePermission userRolePermission = new UserRolePermission();
+            userRolePermission.setPermission(permission);
+            userRolePermission.setUserRole(userRole);
+            userRolePermissionRepository.save(userRolePermission);
+        });
     }
 }

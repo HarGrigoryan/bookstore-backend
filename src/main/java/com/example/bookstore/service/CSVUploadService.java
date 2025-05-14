@@ -6,7 +6,7 @@ import com.example.bookstore.persistance.entity.*;
 import com.example.bookstore.persistance.entity.Character;
 import com.example.bookstore.persistance.repository.*;
 import com.example.bookstore.service.dto.*;
-import com.example.bookstore.service.exception.UnsupportedFormatException;
+import com.example.bookstore.exception.UnsupportedFormatException;
 import com.example.bookstore.service.mapper.*;
 import com.example.bookstore.service.parser.*;
 import com.example.bookstore.service.registry.EntityMapRegistry;
@@ -41,7 +41,6 @@ public class CSVUploadService {
     private final PublisherRepository publisherRepository;
     private final MapperRegistry mapperRegistry;
     private final StarRepository starRepository;
-    //private final RatingByStarsRepository ratingByStarsRepository;
     private final BookRepository bookRepository;
     private final BookAuthorRepository bookAuthorRepository;
     private final BookSeriesRepository bookSeriesRepository;
@@ -56,9 +55,6 @@ public class CSVUploadService {
 
     @Value("${app.image.processing.enabled}")
     private boolean imageProcessingEnabled;
-
-    /*@Value("${app.image.root.path}")
-    private static String IMAGES_ROOT;*/
 
     private static final int CHUNK_SIZE = 2500;
 
@@ -431,12 +427,6 @@ public class CSVUploadService {
                     List<Integer> starRatings = (new RatingByStarsParser()).parseRatingByStars(ratingByStars);
                     int n = 5;
                     for (Integer starRating : starRatings) {
-                        /*RatingByStars ratingByStar = new RatingByStars();
-                        ratingByStar.setBook(book);
-                        ratingByStar.setStar(((Map<String, Star>) maps.get(Star.class)).get(String.valueOf(n--)));
-                        ratingByStar.setNumberOfRatings(starRating);
-                        ratingByStar.setTotalNumberOfRatings(totalStarRatings);
-                        ratingByStarsToSave.add(ratingByStar);*/
                         assert book != null;
                         book.addRatingByStars(((Map<String, Star>) maps.get(Star.class)).get(String.valueOf(n--)),starRating,  totalStarRatings);
 
@@ -500,7 +490,6 @@ public class CSVUploadService {
         bookRepository.saveAll(booksToSave);
         reviewsRepository.saveAll(reviewsToSave);
         bookSeriesRepository.saveAll(bookSeriesToSave);
-        //ratingByStarsRepository.saveAll(ratingByStarsToSave);
         bookCharacterRepository.saveAll(bookCharactersToSave);
         bookAuthorRepository.saveAll(bookAuthorsToSave);
         bookAwardRepository.saveAll(bookAwardsToSave);

@@ -1,6 +1,7 @@
 package com.example.bookstore.exception;
 
 import jakarta.servlet.ServletException;
+import org.hibernate.query.sqm.PathElementException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -13,6 +14,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
 
     @ExceptionHandler(InvalidTokenException.class)
     public ResponseEntity<ExceptionResponse> handleInvalidTokenException(InvalidTokenException e) {
@@ -103,14 +105,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(exceptionResponse.getStatus()).body(exceptionResponse);
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ExceptionResponse> handleRuntime(RuntimeException ex) {
-        ExceptionResponse resp = ExceptionResponse.builder()
-                .withMessage("Unexpected error: " + ex.getMessage())
+    @ExceptionHandler(PathElementException.class)
+    public ResponseEntity<ExceptionResponse> handlePathElementException(PathElementException e) {
+        final ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+                .withMessage(e.getMessage())
                 .build();
-        return ResponseEntity.status(resp.getStatus()).body(resp);
+        return ResponseEntity.status(exceptionResponse.getStatus()).body(exceptionResponse);
     }
-
 
 }
