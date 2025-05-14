@@ -144,5 +144,8 @@ public class CoverImageService {
     }
 
 
+    public String getImage(Long bookId, PictureSize pictureSize) {
+        return bookCoverImageRepository.getImage(bookId, pictureSize);
+    }
 }
 

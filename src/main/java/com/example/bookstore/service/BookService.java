@@ -98,8 +98,7 @@ public class BookService {
         String bookId = bookCreateDto.getBookId();
         Book book = bookRepository.findByBookId(bookId);
         if(book != null)
-            throw new EntityAlreadyExistsException("Book with book id " +
-                    bookId + " already exists.");
+            throw new EntityAlreadyExistsException("Book", "bookId [%s]".formatted(bookId));
         book = new Book();
         book.setBookId(bookId);
         book.setIsbn(bookCreateDto.getIsbn());

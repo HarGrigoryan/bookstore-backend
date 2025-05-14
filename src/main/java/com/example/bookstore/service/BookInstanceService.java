@@ -6,10 +6,12 @@ import com.example.bookstore.exception.EntityNotFoundException;
 import com.example.bookstore.persistance.entity.BookInstance;
 import com.example.bookstore.persistance.repository.BookInstanceRepository;
 import com.example.bookstore.persistance.repository.BookRepository;
+import com.example.bookstore.service.criteria.BookInstanceSearchCriteria;
 import com.example.bookstore.service.dto.BookInstanceDTO;
 import com.example.bookstore.service.dto.BookInstanceRequestDTO;
+import com.example.bookstore.service.dto.PageResponseDTO;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,7 +34,7 @@ public class BookInstanceService {
         Integer copyNumber = bookInstanceRequestDTO.getCopyNumber();
         BookInstance bookInstance = bookInstanceRepository.findByCopyNumberAndBook(copyNumber, bookId);
         if (bookInstance != null) {
-            throw new EntityAlreadyExistsException("BookInstance with book id '%s' and copy number '%s' already exists".formatted(bookId, copyNumber));
+            throw new EntityAlreadyExistsException("BookInstance", "book Id [%s]".formatted(bookId), "copy number [%s] ".formatted(copyNumber));
         }
 
         bookInstance = new BookInstance();
@@ -58,20 +60,14 @@ public class BookInstanceService {
 
     public void deleteById(Long id) {
         BookInstance bookInstance = bookInstanceRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Series with id '%s' found".formatted(id)));
-        try {
-            bookInstanceRepository.delete(bookInstance);
-        }catch (DataIntegrityViolationException e) {
-            if(e.getMostSpecificCause().getMessage().contains("violates foreign key constraint")){
-                List<Long> dependentBookIds = bookInstanceRepository.dependentRentals(id);
-                throw new EntityDeletionException("BookInstance with id: '" + id +
-                        "' could not be deleted successfully. Details: The rentals with the following ids %s are depended on the specified BookInstance.".formatted(dependentBookIds));
-            }
-            throw new EntityDeletionException(id, e.getMessage());
-        }
+        List<Long> dependentBookIds = bookInstanceRepository.dependentRentals(id);
+        if(!dependentBookIds.isEmpty())
+            throw new EntityDeletionException("BookInstance", id, dependentBookIds);
+        bookInstanceRepository.delete(bookInstance);
     }
 
-/*    public PageResponseDTO<BookInstanceDTO> getAll(BookInstanceSearchCriteria criteria) {
+    public PageResponseDTO<BookInstanceDTO> getAll(BookInstanceSearchCriteria criteria) {
         Page<BookInstanceDTO> page = bookInstanceRepository.findAll(criteria, criteria.buildPageRequest());
         return PageResponseDTO.from(page);
-    }*/
+    }
 }

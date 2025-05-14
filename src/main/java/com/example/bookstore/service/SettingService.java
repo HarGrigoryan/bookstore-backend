@@ -9,7 +9,6 @@ import com.example.bookstore.service.dto.SettingDTO;
 import com.example.bookstore.service.dto.SettingRequestDTO;
 import com.example.bookstore.service.mapper.SettingMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,7 +27,7 @@ public class SettingService {
 
 
     public SettingDTO updateById(Long id, SettingRequestDTO settingDTO) {
-        Setting setting = settingRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Setting with id '%s' not found".formatted(id)));
+        Setting setting = settingRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Setting", id));
         setting.setName(settingDTO.getName());
         return settingMapper.entityToDto(settingRepository.save(setting));
     }
@@ -36,7 +35,7 @@ public class SettingService {
     public SettingDTO createSetting( SettingRequestDTO settingDTO) {
         Setting setting = settingRepository.findByName(settingDTO.getName());
         if(setting != null) {
-            throw new EntityAlreadyExistsException("Setting with name '%s' already exists".formatted(settingDTO.getName()));
+            throw new EntityAlreadyExistsException("Setting", "name '%s'".formatted(settingDTO.getName()));
         }
         setting = new Setting();
         setting.setName(settingDTO.getName());
@@ -44,16 +43,10 @@ public class SettingService {
     }
 
     public void deleteById(Long id) {
-        Setting setting = settingRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Setting with id '%s' not found".formatted(id)));
-        try {
-            settingRepository.delete(setting);
-        }catch (DataIntegrityViolationException e) {
-            if(e.getMostSpecificCause().getMessage().contains("violates foreign key constraint")){
-                List<Long> dependentBookIds = settingRepository.dependentBookIds(id);
-                throw new EntityDeletionException("Setting with id: '" + id +
-                        "' could not be deleted successfully. Details: The books with the following ids %s are depended on the specified setting.".formatted(dependentBookIds));
-            }
-            throw new EntityDeletionException(id, e.getMessage());
-        }
+        Setting setting = settingRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Setting", id));
+        List<Long> dependentBookIds = settingRepository.dependentBookIds(id);
+        if(!dependentBookIds.isEmpty())
+            throw new EntityDeletionException("Setting", id, dependentBookIds);
+        settingRepository.delete(setting);
     }
 }

@@ -9,7 +9,6 @@ import com.example.bookstore.exception.EntityAlreadyExistsException;
 import com.example.bookstore.exception.EntityNotFoundException;
 import com.example.bookstore.service.mapper.PublisherMapper;
 import lombok.AllArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -40,7 +39,7 @@ public class PublisherService {
     public PublisherDTO createPublisher(PublisherDTO publisherDto) {
         String name = publisherDto.getName();
         if(publisherRepository.existsByName(name))
-            throw new EntityAlreadyExistsException("Publisher with name '" + name + "' already exists." );
+            throw new EntityAlreadyExistsException("Publisher", "name '%s'".formatted(name));
         Publisher publisher = new Publisher();
         publisher.setName(name);
         return publisherMapper.entityToDto(publisherRepository.save(publisher));
@@ -55,19 +54,10 @@ public class PublisherService {
     }
 
     public void deletePublisherById(Long id) {
-
-        Publisher publisher = publisherRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Publisher with id: '" + id + "' was not found."));
-        try {
-            publisherRepository.delete(publisher);
-        }catch (DataIntegrityViolationException e)
-        {
-            if(e.getMostSpecificCause().getMessage().contains("violates foreign key constraint")) {
-                List<Long> dependentBookIds = publisherRepository.publishedBookIds(id);
-                throw new EntityDeletionException("Publisher with id: '" + id +
-                        "' could not be deleted successfully. Details: The books with the following ids %s are dependent on the specified publisher.".formatted(dependentBookIds));
-
-            }
-            throw new EntityDeletionException(id, e.getMessage());
-        }
+        Publisher publisher = publisherRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Publisher", id));
+        List<Long> dependentBookIds = publisherRepository.publishedBookIds(id);
+        if (!dependentBookIds.isEmpty())
+            throw new EntityDeletionException("Publisher", id, dependentBookIds);
+        publisherRepository.delete(publisher);
     }
 }

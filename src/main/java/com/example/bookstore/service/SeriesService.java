@@ -9,7 +9,6 @@ import com.example.bookstore.service.dto.SeriesCreateRequestDTO;
 import com.example.bookstore.service.dto.SeriesDTO;
 import com.example.bookstore.service.mapper.SeriesMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,7 +23,7 @@ public class SeriesService {
     public SeriesDTO create(SeriesCreateRequestDTO seriesCreateRequestDTO) {
         Series series = seriesRepository.findByName(seriesCreateRequestDTO.getName());
         if(series != null) {
-            throw new EntityAlreadyExistsException("Series with name '" + seriesCreateRequestDTO.getName() + "' already exists.");
+            throw new EntityAlreadyExistsException("Series", "name '%s".formatted(seriesCreateRequestDTO.getName()));
         }
         series = new Series();
         series.setName(seriesCreateRequestDTO.getName());
@@ -33,17 +32,10 @@ public class SeriesService {
 
     public void delete(Long id) {
         Series series = seriesRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Series with id '%s' found".formatted(id)));
-        try {
-            seriesRepository.delete(series);
-        }catch (DataIntegrityViolationException e) {
-            if(e.getMostSpecificCause().getMessage().contains("violates foreign key constraint")){
-                List<Long> dependentBookIds = seriesRepository.dependentBookIds(id);
-                throw new EntityDeletionException("Series with id: '" + id +
-                        "' could not be deleted successfully. Details: The books with the following ids %s are depended on the specified series.".formatted(dependentBookIds));
-            }
-            throw new EntityDeletionException(id, e.getMessage());
-        }
-
+        List<Long> dependentBookIds = seriesRepository.dependentBookIds(id);
+        if (!dependentBookIds.isEmpty())
+            throw new EntityDeletionException("Author", id, dependentBookIds);
+        seriesRepository.delete(series);
     }
 
     public SeriesDTO getSeriesById(Long id) {

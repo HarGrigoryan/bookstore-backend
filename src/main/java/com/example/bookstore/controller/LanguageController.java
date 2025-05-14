@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/languages")
 @RequiredArgsConstructor
@@ -19,6 +21,11 @@ public class LanguageController {
     @GetMapping("/{id}")
     public LanguageDTO getById(@PathVariable Long id) {
         return languageService.getById(id);
+    }
+
+    @GetMapping
+    public List<LanguageDTO> getAll() {
+        return languageService.getAll();
     }
 
     @DeleteMapping("/{id}")

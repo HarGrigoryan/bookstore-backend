@@ -25,7 +25,7 @@ public class RatingService {
     public Integer rateBookById(Long bookId, Integer starNumber) {
         Book book = bookRepository.findById(bookId).orElse(null);
         if(book == null) {
-            throw new EntityNotFoundException("Book with id '" + bookId + "' not found");
+            throw new EntityNotFoundException("Book", bookId);
         }
         List<RatingByStars> ratingByStarsList = ratingByStarsRepository.findByBook(book);
         if(ratingByStarsList.isEmpty() || !containsStarRating(ratingByStarsList, starNumber)) {

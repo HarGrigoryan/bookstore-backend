@@ -72,7 +72,7 @@ public class Book {
     private List<BookGenre> genres = new ArrayList<>();
 
     @OneToMany(mappedBy = "book", cascade = {CascadeType.MERGE, CascadeType.REMOVE})
-    private List<BookSetting> bookSettingList = new ArrayList<>();
+    private List<BookSetting> settings = new ArrayList<>();
 
     @OneToMany(mappedBy = "book", cascade = {CascadeType.MERGE, CascadeType.REMOVE})
     private List<BookSeries> bookSeriesList = new ArrayList<>();

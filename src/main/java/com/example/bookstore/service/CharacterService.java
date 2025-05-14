@@ -9,7 +9,6 @@ import com.example.bookstore.service.dto.CharacterDTO;
 import com.example.bookstore.service.dto.CharacterRequestDTO;
 import com.example.bookstore.service.mapper.CharacterMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -47,16 +46,10 @@ public class CharacterService {
     }
 
     public void deleteById(Long id) {
-        Character character = characterRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Series with id '%s' found".formatted(id)));
-        try {
-            characterRepository.delete(character);
-        }catch (DataIntegrityViolationException e) {
-            if(e.getMostSpecificCause().getMessage().contains("violates foreign key constraint")){
-                List<Long> dependentBookIds = characterRepository.dependentBookIds(id);
-                throw new EntityDeletionException("Character with id: '" + id +
-                        "' could not be deleted successfully. Details: The books with the following ids %s are depended on the specified character.".formatted(dependentBookIds));
-            }
-            throw new EntityDeletionException(id, e.getMessage());
-        }
+        Character character = characterRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Character", id));
+        List<Long> dependentBookIds = characterRepository.dependentBookIds(id);
+        if(!dependentBookIds.isEmpty())
+            throw new EntityDeletionException("Character", id, dependentBookIds);
+        characterRepository.delete(character);
     }
 }
