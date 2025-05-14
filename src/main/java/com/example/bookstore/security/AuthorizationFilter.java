@@ -10,6 +10,8 @@ import com.example.bookstore.security.util.JwtUtil;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -24,6 +26,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 public class AuthorizationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final UserDetailsService userDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -43,6 +46,7 @@ public class AuthorizationFilter extends OncePerRequestFilter {
         }
 
         final String username = jwtUtil.getUsername(token);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
         final String[] authorities = jwtUtil.getAuthorities(token);
 
         final List<SimpleGrantedAuthority> grantedAuthorities = Arrays.stream(authorities)
@@ -50,7 +54,7 @@ public class AuthorizationFilter extends OncePerRequestFilter {
                 .toList();
 
         final UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(username, null, grantedAuthorities);
+                new UsernamePasswordAuthenticationToken(userDetails, null, grantedAuthorities);
 
         authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);

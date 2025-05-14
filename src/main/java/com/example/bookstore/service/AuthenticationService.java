@@ -13,10 +13,12 @@ import com.example.bookstore.security.CustomUserDetailsService;
 import com.example.bookstore.security.dto.RefreshTokenRequestDTO;
 import com.example.bookstore.service.dto.UserRegistrationDTO;
 import com.example.bookstore.service.dto.UserRegistrationResponseDTO;
+import com.example.bookstore.service.email.EmailServiceImpl;
 import lombok.RequiredArgsConstructor;
 import com.example.bookstore.security.dto.LoginRequestDTO;
 import com.example.bookstore.security.dto.LoginResponseDTO;
 import com.example.bookstore.security.util.JwtUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -34,6 +36,17 @@ public class AuthenticationService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailServiceImpl emailService;
+    private final UserService userService;
+
+    @Value("${bookstore.name}")
+    private String bookStoreName;
+
+    @Value("${bookstore.email.welcome.message}")
+    private String welcomeMessage;
+
+    @Value("${bookstore.email.welcome.subject}")
+    private String welcomeSubject;
 
 
     public LoginResponseDTO authenticate(LoginRequestDTO loginRequest) {
@@ -73,7 +86,8 @@ public class AuthenticationService {
     }
 
     public UserRegistrationResponseDTO register( UserRegistrationDTO userRegistrationDTO) {
-        if (userRepository.existsByEmail(userRegistrationDTO.getEmail())) {
+        String email = userRegistrationDTO.getEmail().toLowerCase();
+        if (userRepository.existsByEmail(email)) {
             throw new ResourceAlreadyUsedException("User with this email already exists");
         }
 
@@ -81,14 +95,16 @@ public class AuthenticationService {
                 .orElseThrow(() -> new EntityNotFoundException("Role not found"));
 
         final User user = new User();
-        user.setFirstname(userRegistrationDTO.getFirstname());
+        String firstname = userRegistrationDTO.getFirstname();
+        user.setFirstname(firstname);
         user.setLastname(userRegistrationDTO.getLastname());
-        user.setEmail(userRegistrationDTO.getEmail());
+        user.setEmail(email);
         user.setPassword(passwordEncoder.encode(userRegistrationDTO.getPassword()));
         user.setEnabled(true);
-        user.setRole(role);
         user.setEnabled(true);
         userRepository.save(user);
+        userService.assignRole(user, role);
+        emailService.sendEmail(email, welcomeSubject, welcomeMessage.formatted(firstname, bookStoreName));
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(user.getEmail());
         final String accessToken = jwtUtil.generateAccessToken(userDetails);
         final String refreshToken = jwtUtil.generateRefreshToken(userDetails);
