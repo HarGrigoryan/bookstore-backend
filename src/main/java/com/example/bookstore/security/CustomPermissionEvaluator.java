@@ -23,9 +23,14 @@ public class CustomPermissionEvaluator implements PermissionEvaluator {
         CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
         Long userId = principal.getUserId();
         PermissionName permissionName = PermissionName.valueOf(permission.toString());
-        RoleName roleName = RoleName.valueOf(targetDomainObject.toString());
-        UserRolePermission userRolePermission = userRolePermissionRepository.findByUserIdAndRoleNameAndPermissionName(userId,
-                permissionName, roleName).orElse(null);
+        RoleName roleName;
+        if(targetDomainObject.toString().equalsIgnoreCase("ANY"))
+            roleName = null;
+        else
+            roleName = RoleName.valueOf(targetDomainObject.toString());
+        UserRolePermission userRolePermission = userRolePermissionRepository
+                .findByUserIdAndRoleNameAndPermissionName(userId, permissionName, roleName)
+                .orElse(null);
         return userRolePermission != null;
     }
 
