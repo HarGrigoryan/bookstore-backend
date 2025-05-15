@@ -9,9 +9,6 @@ import java.util.List;
 
 @Repository
 public interface CharacterRepository extends JpaRepository<Character, Long> {
-    //TOCHECK
-    @Override
-    List<Character> findAll();
 
     @Query("""
         SELECT bc.book.id FROM BookCharacter bc WHERE bc.character.id = :id
