@@ -13,31 +13,30 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/characters")
-//TODO: Improve security
 public class CharacterController {
 
     private final CharacterService characterService;
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'STAFF')")
     public ResponseEntity<CharacterDTO> getById(@PathVariable Long id) {
         return ResponseEntity.ok(characterService.getById(id));
     }
 
-    //TODO: A task for final touch-ups: ensure consistency for the resource naming of Put requests
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROLE_STAFF')")
+    @PreAuthorize("hasRole('STAFF')")
     public ResponseEntity<CharacterDTO> updateCharacter(@PathVariable Long id, @RequestBody @Valid CharacterRequestDTO characterRequestDTO) {
         return ResponseEntity.ok(characterService.updateById(id, characterRequestDTO));
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('ROLE_STAFF')")
+    @PreAuthorize("hasRole('MANAGER') OR hasPermission('ROLE_STAFF', 'ADD_INFORMATION')")
     public ResponseEntity<CharacterDTO> createCharacter(@RequestBody @Valid CharacterRequestDTO characterRequestDTO) {
         return ResponseEntity.status(HttpStatus.CREATED).body(characterService.create(characterRequestDTO));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasRole('ROLE_MANAGER') OR hasPermission('ROLE_STAFF', 'REMOVE_INFORMATION')")
     public ResponseEntity<Void> deleteCharacter(@PathVariable Long id) {
         characterService.deleteById(id);
         return ResponseEntity.noContent().build();
