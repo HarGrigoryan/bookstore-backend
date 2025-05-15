@@ -83,6 +83,8 @@ public class SecurityConfiguration {
                         a ->
                                 a.requestMatchers("/auth/**").permitAll()
                                         .requestMatchers(HttpMethod.GET, "/books").permitAll()
+                                        .requestMatchers(HttpMethod.GET, "/authors/{id}").permitAll()
+                                        .requestMatchers(HttpMethod.GET, "/authors").permitAll()
                                         .anyRequest()
                                         .fullyAuthenticated()
                 )
