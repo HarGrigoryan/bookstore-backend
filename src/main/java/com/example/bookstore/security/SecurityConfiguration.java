@@ -44,7 +44,9 @@ public class SecurityConfiguration {
 
     @Bean
     public RoleHierarchy roleHierarchy() {
-        return RoleHierarchyImpl.fromHierarchy("ROLE_MANAGER > ROLE_STAFF");
+        return RoleHierarchyImpl.withDefaultRolePrefix()
+                .role("MANAGER").implies("STAFF")
+                .build();
     }
 
     @Bean
