@@ -58,7 +58,7 @@ public class UserService {
     public UserDTO getById(Long id) {
 
         final User user = userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("User", id));
 
         return UserDTO.toDTO(user);
     }
@@ -108,6 +108,7 @@ public class UserService {
 
     public void addPermissions(Long id, PermissionUpdateRequestDTO permissionUpdateRequestDTO) {
         RoleName roleName = permissionUpdateRequestDTO.getRoleName();
+        Role role = roleRepository.findByName(roleName).orElseThrow(() -> new EntityNotFoundException("Role with name '%s' not found".formatted(roleName)));
         UserRole userRole = userRepository.findRole(id, roleName);
         if(userRole == null) {
             throw new EntityNotFoundException("User with id '%s' does not have an assigned role of '%s'".formatted(id, roleName));
@@ -116,8 +117,8 @@ public class UserService {
         List<Permission> permissions = permissionNames.stream()
                 .map(p -> permissionRepository.findByName(p).orElseThrow( () -> new EntityNotFoundException("Permission with permission name [%s] does not exist.")))
                 .toList();
-        List<UserRolePermission> userRolePermissions = permissionNames.stream()
-                .map(p -> userRolePermissionRepository.findByUserIdAndRoleNameAndPermissionName(id, p, roleName).orElse(null))
+        List<UserRolePermission> userRolePermissions = permissions.stream()
+                .map(p -> userRolePermissionRepository.findByUserIdAndRoleAndPermission(id, role, p).orElse(null))
                 .toList();
         userRolePermissions.forEach(u-> {
             if(u != null)
