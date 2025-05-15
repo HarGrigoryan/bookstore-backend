@@ -39,6 +39,7 @@ public class SecurityConfiguration {
     public MethodSecurityExpressionHandler methodSecurityExpressionHandler(CustomPermissionEvaluator customPermissionEvaluator) {
         DefaultMethodSecurityExpressionHandler expressionHandler = new DefaultMethodSecurityExpressionHandler();
         expressionHandler.setPermissionEvaluator(customPermissionEvaluator);
+        expressionHandler.setRoleHierarchy(roleHierarchy());
         return expressionHandler;
     }
 
