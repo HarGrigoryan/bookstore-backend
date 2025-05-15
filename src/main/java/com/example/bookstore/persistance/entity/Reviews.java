@@ -17,7 +17,7 @@ public class Reviews {
     private Long id;
 
     @JoinColumn(name = "book_id")
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Book book;
 
