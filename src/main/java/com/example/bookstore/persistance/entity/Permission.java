@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Entity
 @Table(name = "permission")
 @Setter
@@ -22,5 +24,9 @@ public class Permission {
     @Column(name = "name", nullable = false, unique = true)
     @Enumerated(EnumType.STRING)
     private PermissionName name;
+
+    @OneToMany(mappedBy = "permission", cascade = {CascadeType.MERGE, CascadeType.REMOVE})
+    private List<UserRolePermission> userRolePermissions;
+
 
 }

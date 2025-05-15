@@ -7,6 +7,8 @@ import lombok.Setter;
 
 import com.example.bookstore.enums.RoleName;
 
+import java.util.List;
+
 @Entity
 @Table(name = "role")
 @Setter
@@ -20,5 +22,8 @@ public class Role {
     @Column(name = "name", unique = true, nullable = false)
     @Enumerated(EnumType.STRING)
     private RoleName name;
+
+    @OneToMany(mappedBy = "role", cascade = {CascadeType.MERGE, CascadeType.REMOVE})
+    private List<UserRole> userRoles;
 
 }

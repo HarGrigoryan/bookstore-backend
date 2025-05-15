@@ -6,10 +6,12 @@ import com.example.bookstore.exception.EntityAlreadyExistsException;
 import com.example.bookstore.exception.EntityNotFoundException;
 import com.example.bookstore.persistance.entity.*;
 import com.example.bookstore.persistance.repository.*;
+import com.example.bookstore.service.criteria.UserSearchCriteria;
 import com.example.bookstore.service.dto.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import com.example.bookstore.exception.ResourceAlreadyUsedException;
+import org.springframework.data.domain.Page;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -48,10 +50,9 @@ public class UserService {
         return UserDTO.toDTO(user);
     }
 
-    public List<UserDTO> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(UserDTO::toDTO)
-                .toList();
+    public PageResponseDTO<UserSearchResponseDTO> getAllUsers(UserSearchCriteria criteria) {
+        Page<UserSearchResponseDTO> page = userRepository.findAll(criteria, criteria.buildPageRequest());
+        return PageResponseDTO.from(page);
     }
 
     public UserDTO getById(Long id) {
@@ -128,5 +129,30 @@ public class UserService {
             userRolePermission.setUserRole(userRole);
             userRolePermissionRepository.save(userRolePermission);
         });
+    }
+
+    public void revokeRole(Long userId, List<RoleName> roleNames) {
+        List<UserRole> userRoles = roleNames
+                .stream()
+                .map(roleName -> userRoleRepository.findByUserIdAndRoleName(userId, roleName)
+                        .orElseThrow(() ->
+                                new EntityNotFoundException(("User with id [%s] does not have " +
+                                        "the assigned role of '%s'.").formatted(userId, roleName))))
+                .toList();
+        userRoleRepository.deleteAll(userRoles);
+    }
+
+    public void revokePermissions(Long id, PermissionUpdateRequestDTO permissionUpdateRequestDTO) {
+        RoleName roleName = permissionUpdateRequestDTO.getRoleName();
+        List<UserRolePermission> userRolePermissions = permissionUpdateRequestDTO.getPermissionNames()
+                .stream()
+                .map(permissionName ->
+                        userRolePermissionRepository.findByUserIdAndRoleNameAndPermissionName(id, permissionName, roleName)
+                                .orElseThrow(() ->
+                                        new EntityNotFoundException(("User with id [%s] " +
+                                                "does not have permission [%s] defined for role [%s]")
+                                                .formatted(id, permissionName, roleName))))
+                .toList();
+        userRolePermissionRepository.deleteAll(userRolePermissions);
     }
 }
