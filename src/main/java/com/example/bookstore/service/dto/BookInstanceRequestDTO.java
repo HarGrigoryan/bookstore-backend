@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @AllArgsConstructor
 @Getter
 @Setter
@@ -20,9 +22,12 @@ public class BookInstanceRequestDTO {
 
     private Boolean isSellable = true;
 
-    private Integer rentCount = 0;
+    private Integer maxRentCount = 0;
 
     private BookInstanceStatus status = BookInstanceStatus.AVAILABLE;
+
+    @NotBlank
+    private BigDecimal initialPrice;
 
     @NotBlank
     private Long bookId;

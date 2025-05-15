@@ -15,6 +15,23 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(BookInstanceNotAvailable.class)
+    public ResponseEntity<ExceptionResponse> handleBookInstanceIsNotAvailable(BookInstanceNotAvailable e) {
+        final ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .withStatus(HttpStatus.BAD_REQUEST)
+                .withMessage(e.getMessage())
+                .build();
+        return new ResponseEntity<>(exceptionResponse, exceptionResponse.getStatus());
+    }
+
+    @ExceptionHandler(PaymentFailedException.class)
+    public ResponseEntity<ExceptionResponse> handlePaymentFailedException(PaymentFailedException e) {
+        final ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .withStatus(HttpStatus.BAD_REQUEST)
+                .withMessage(e.getMessage())
+                .build();
+        return new ResponseEntity<>(exceptionResponse, exceptionResponse.getStatus());
+    }
 
     @ExceptionHandler(InvalidTokenException.class)
     public ResponseEntity<ExceptionResponse> handleInvalidTokenException(InvalidTokenException e) {

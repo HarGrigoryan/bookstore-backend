@@ -1,5 +1,6 @@
 package com.example.bookstore.service;
 
+import com.example.bookstore.exception.BookInstanceNotAvailable;
 import com.example.bookstore.exception.EntityAlreadyExistsException;
 import com.example.bookstore.exception.EntityDeletionException;
 import com.example.bookstore.exception.EntityNotFoundException;
@@ -14,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 
@@ -43,6 +46,8 @@ public class BookInstanceService {
         bookInstance.setIsSellable(bookInstanceRequestDTO.getIsSellable());
         bookInstance.setIsRentable(bookInstanceRequestDTO.getIsRentable());
         bookInstance.setBook(bookRepository.findById(bookId).orElseThrow(() -> new EntityNotFoundException("Book", bookId)));
+        bookInstance.setInitialPrice(bookInstanceRequestDTO.getInitialPrice());
+        bookInstance.setMaxRentCount(bookInstanceRequestDTO.getMaxRentCount());
         return BookInstanceDTO.toDTO(bookInstanceRepository.save(bookInstance));
     }
 
@@ -53,7 +58,7 @@ public class BookInstanceService {
         bookInstance.setStatus(bookInstanceRequestDTO.getStatus());
         bookInstance.setIsSellable(bookInstanceRequestDTO.getIsSellable());
         bookInstance.setIsRentable(bookInstanceRequestDTO.getIsRentable());
-        bookInstance.setRentCount(bookInstanceRequestDTO.getRentCount());
+        bookInstance.setMaxRentCount(bookInstanceRequestDTO.getMaxRentCount());
         bookInstance.setBook(bookRepository.findById(bookInstanceRequestDTO.getBookId()).orElseThrow(() -> new EntityNotFoundException("Book", bookInstanceRequestDTO.getBookId())));
         return BookInstanceDTO.toDTO(bookInstanceRepository.save(bookInstance));
     }
@@ -69,5 +74,19 @@ public class BookInstanceService {
     public PageResponseDTO<BookInstanceDTO> getAll(BookInstanceSearchCriteria criteria) {
         Page<BookInstanceDTO> page = bookInstanceRepository.findAll(criteria, criteria.buildPageRequest());
         return PageResponseDTO.from(page);
+    }
+
+    public BigDecimal getRentingCost(Long id) {
+        BookInstance bookInstance = bookInstanceRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("BookInstance", id));
+        if(!bookInstance.getIsRentable())
+            throw new BookInstanceNotAvailable("Book instance with id [%s] is not rentable".formatted(id));
+        return bookInstance.getInitialPrice().divide(BigDecimal.valueOf(bookInstance.getMaxRentCount()), 5, RoundingMode.CEILING);
+    }
+
+    public BigDecimal getSaleCost(Long id) {
+        BookInstance bookInstance = bookInstanceRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("BookInstance", id));
+        if(!bookInstance.getIsSellable())
+            throw new BookInstanceNotAvailable("Book instance with id [%s] is not sellable".formatted(id));
+        return bookInstance.getInitialPrice().multiply(BigDecimal.valueOf(1 - bookInstanceRepository.getCurrentRentCount(id) * (100D / bookInstance.getMaxRentCount())));
     }
 }

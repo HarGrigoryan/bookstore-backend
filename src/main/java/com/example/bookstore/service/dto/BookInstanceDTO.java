@@ -8,6 +8,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -16,13 +19,19 @@ public class BookInstanceDTO {
 
     private Long id;
 
-    private Integer copyNumber;
+    private Integer instanceNumber;
 
-    private Boolean isRentable = false;
+    private Boolean isRentable;
 
-    private Boolean isSellable = true;
+    private Boolean isSellable;
 
-    private Integer rentCount = 0;
+    private Integer maxRentCount;
+
+    private BigDecimal price;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 
     private BookInstanceStatus status = BookInstanceStatus.AVAILABLE;
 
@@ -32,12 +41,15 @@ public class BookInstanceDTO {
     public static BookInstanceDTO toDTO(BookInstance bookInstance) {
         BookInstanceDTO dto = new BookInstanceDTO();
         dto.id = bookInstance.getId();
-        dto.copyNumber = bookInstance.getInstanceNumber();
+        dto.instanceNumber = bookInstance.getInstanceNumber();
         dto.isRentable = bookInstance.getIsRentable();
         dto.isSellable = bookInstance.getIsSellable();
-        dto.rentCount = bookInstance.getRentCount();
+        dto.maxRentCount = bookInstance.getMaxRentCount();
         dto.status = bookInstance.getStatus();
         dto.bookId = bookInstance.getBook().getId();
+        dto.createdAt = bookInstance.getCreatedAt();
+        dto.updatedAt = bookInstance.getUpdatedAt();
+        dto.price = bookInstance.getInitialPrice();
         return dto;
     }
 }

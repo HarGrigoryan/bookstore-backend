@@ -2,19 +2,19 @@ package com.example.bookstore.persistance.entity;
 
 import com.example.bookstore.enums.RentalStatus;
 import jakarta.persistence.*;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.*;
 
 import java.time.Instant;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "rental")
+@Table(name = "rental", uniqueConstraints = {@UniqueConstraint(columnNames = {"book_instance_id", "user_id", "payment_id"})})
+@Check(constraints = "actual_return_date <= CURRENT_DATE")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -25,9 +25,8 @@ public class Rental {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //TODO: Reconsider cascade type choices.
     @JoinColumn(name = "book_instance_id")
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private BookInstance bookInstance;
 
@@ -40,6 +39,11 @@ public class Rental {
     @CreationTimestamp
     private Instant rentedAt;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "last_updated_at", nullable = false)
+    @UpdateTimestamp
+    private Instant updatedAt;
+
     @Column(name = "expected_return_date", nullable = false)
     private LocalDate expectedReturnDate;
 
@@ -49,5 +53,9 @@ public class Rental {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private RentalStatus status = RentalStatus.IN_PROGRESS;
+
+    @JoinColumn(name = "payment_id")
+    @OneToOne(fetch = FetchType.LAZY)
+    private Payment payment;
 
 }
