@@ -13,10 +13,12 @@ import com.example.bookstore.persistance.repository.SaleRepository;
 import com.example.bookstore.persistance.repository.UserRepository;
 import com.example.bookstore.security.dto.SaleResponseDTO;
 import com.example.bookstore.service.dto.SaleCreateRequestDTO;
+import com.example.bookstore.service.dto.UserDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 
 @Service
@@ -47,8 +49,12 @@ public class SaleService {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new EntityNotFoundException("Payment", paymentId));
         Integer currentRentCount = bookInstanceRepository.getCurrentRentCount(bookInstanceId);
-        BigDecimal rentPrice = bookInstanceService.getRentingCost(bookInstanceId);
-        if(!payment.getAmount().equals(bookInstance.getInitialPrice().subtract(rentPrice.multiply(BigDecimal.valueOf(currentRentCount)))))
+        BigDecimal salePrice = bookInstance.getInitialPrice().setScale(5, RoundingMode.CEILING);
+        if(bookInstance.getIsRentable()) {
+            BigDecimal rentPrice = bookInstanceService.getRentingCost(bookInstanceId);
+            salePrice = salePrice.subtract(rentPrice.multiply(BigDecimal.valueOf(currentRentCount))).setScale(5, RoundingMode.CEILING);
+        }
+        if(!payment.getAmount().equals(salePrice))
             throw new PaymentFailedException("Payment with id [%s] cannot be used to buy book instance [%s]".formatted(paymentId, bookInstanceId));
         Sale sale = new Sale();
         sale.setBookInstance(bookInstance);
@@ -67,5 +73,9 @@ public class SaleService {
         saleRepository.delete(sale);
     }
 
+    public UserDTO getUserBySaleId(Long id) {
+        Sale sale = saleRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Sale", id));
+        return UserDTO.toDTO(sale.getUser());
+    }
 
 }
