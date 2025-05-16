@@ -18,7 +18,6 @@ public class RentalController {
 
     private final RentalService rentalService;
 
-    //TODO: add security
     @PostMapping
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<RentalDTO> create(@RequestBody @Valid RentalCreateDTO rentalCreateDTO) {
