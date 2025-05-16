@@ -1,5 +1,6 @@
 package com.example.bookstore.service;
 
+import com.example.bookstore.enums.BookInstanceStatus;
 import com.example.bookstore.exception.BookInstanceNotAvailable;
 import com.example.bookstore.exception.EntityNotFoundException;
 import com.example.bookstore.exception.PaymentFailedException;
@@ -63,6 +64,7 @@ public class SaleService {
         saleRepository.save(sale);
         bookInstance.setIsSellable(false);
         bookInstance.setIsRentable(false);
+        bookInstance.setStatus(BookInstanceStatus.SOLD);
         bookInstanceRepository.save(bookInstance);
         return SaleResponseDTO.toDTO(saleRepository.save(sale));
     }
