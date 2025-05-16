@@ -35,7 +35,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("authentication.principal.userId == #id OR hasRole('ROLE_STAFF')")
+    @PreAuthorize("authentication.principal.userId == #id OR hasRole('STAFF')")
     public ResponseEntity<UserDTO> getById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getById(id));
     }
@@ -47,7 +47,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("authentication.principal.userId == #id OR hasRole('ROLE_MANAGER')")
+    @PreAuthorize("authentication.principal.userId == #id OR hasRole('MANAGER')")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
