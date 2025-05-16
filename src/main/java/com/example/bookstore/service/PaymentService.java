@@ -63,7 +63,8 @@ public class PaymentService {
     public UserDTO getUserByPaymentId(Long id)
     {
         Payment payment = paymentRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Payment", id));
-        return UserDTO.toDTO(payment.getUser());
+        User user = payment.getUser();
+        return UserDTO.toDTO(user);
     }
 
     public PaymentDTO getById(Long id)
