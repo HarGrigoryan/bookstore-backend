@@ -60,27 +60,27 @@ public class UserController {
     }
 
     @PreAuthorize("hasRole('MANAGER')")
-    @PostMapping("/{id}/add-roles")
+    @PostMapping("/{id}/roles")
     public ResponseEntity<Void> addRole(@PathVariable Long id, @RequestBody List<RoleName> roleNames) {
         userService.addRole(id, roleNames);
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/{id}/revoke-roles")
+    @DeleteMapping("/{id}/roles")
     @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<Void> revokeRoles(@PathVariable Long id, @RequestBody List<RoleName> roleNames) {
         userService.revokeRole(id, roleNames);
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{id}/add-permissions")
+    @PostMapping("/{id}/permissions")
     @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<Void> addPermissions(@PathVariable Long id, @RequestBody PermissionUpdateRequestDTO permissionUpdateRequestDTO) {
         userService.addPermissions(id, permissionUpdateRequestDTO);
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/{id}/revoke-permissions")
+    @DeleteMapping("/{id}/permissions")
     @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<Void> revokePermissions(@PathVariable Long id, @RequestBody PermissionUpdateRequestDTO permissionUpdateRequestDTO) {
         userService.revokePermissions(id, permissionUpdateRequestDTO);
