@@ -6,10 +6,8 @@ import com.example.bookstore.service.dto.PaymentRequestDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/payments")
@@ -19,8 +17,16 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @PostMapping
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<PaymentDTO> create(@RequestBody @Valid PaymentRequestDTO paymentRequestDTO) {
         return ResponseEntity.ok(paymentService.pay(paymentRequestDTO));
     }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("authentication.principal.userId.equals(paymentService.getUserByPaymentId(id).id) OR hasRole('STAFF')")
+    public ResponseEntity<PaymentDTO> get(@PathVariable Long id) {
+        return ResponseEntity.ok(paymentService.getById(id));
+    }
+
 
 }

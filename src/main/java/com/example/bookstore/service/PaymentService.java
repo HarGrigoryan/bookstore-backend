@@ -10,6 +10,7 @@ import com.example.bookstore.persistance.repository.PaymentRepository;
 import com.example.bookstore.persistance.repository.UserRepository;
 import com.example.bookstore.service.dto.PaymentDTO;
 import com.example.bookstore.service.dto.PaymentRequestDTO;
+import com.example.bookstore.service.dto.UserDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -57,6 +58,18 @@ public class PaymentService {
         payment.setTransactionReference(transactionReference);
         payment.setStatus(PaymentStatus.COMPLETED);
         return PaymentDTO.toDTO(paymentRepository.save(payment));
+    }
+
+    public UserDTO getUserByPaymentId(Long id)
+    {
+        Payment payment = paymentRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Payment", id));
+        return UserDTO.toDTO(payment.getUser());
+    }
+
+    public PaymentDTO getById(Long id)
+    {
+        Payment payment = paymentRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Payment", id));
+        return PaymentDTO.toDTO(payment);
     }
 
 }
