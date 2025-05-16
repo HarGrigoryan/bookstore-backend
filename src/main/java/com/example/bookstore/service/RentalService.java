@@ -14,6 +14,7 @@ import com.example.bookstore.persistance.repository.UserRepository;
 import com.example.bookstore.service.dto.RentalCreateDTO;
 import com.example.bookstore.service.dto.RentalDTO;
 import com.example.bookstore.service.dto.RentalUpdateDTO;
+import com.example.bookstore.service.dto.UserDTO;
 import com.example.bookstore.service.email.EmailServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +26,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 
-@Service
+@Service("rentalService")
 @RequiredArgsConstructor
 public class RentalService {
 
@@ -102,5 +103,10 @@ public class RentalService {
         }
         emailServiceImpl.sendEmail(user.getEmail(), emailSubject, emailMessage.formatted(user.getFirstname(), bookInstance.getBook().getTitle(), newRental.getExpectedReturnDate(), bookStoreName));
         return RentalDTO.mapToDTO(newRental);
+    }
+
+    public UserDTO getUserByRentalId(Long rentalId) {
+        Rental rental = rentalRepository.findById(rentalId).orElseThrow(() -> new EntityNotFoundException("Rental", rentalId));
+        return UserDTO.toDTO(rental.getUser());
     }
 }
