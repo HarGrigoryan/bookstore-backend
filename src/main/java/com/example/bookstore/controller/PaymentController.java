@@ -23,7 +23,7 @@ public class PaymentController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("authentication.principal.userId.equals(paymentService.getUserByPaymentId(id).id) OR hasRole('STAFF')")
+    @PreAuthorize("authentication.principal.userId.equals(paymentService.getUserByPaymentId(#id).id) OR hasRole('STAFF')")
     public ResponseEntity<PaymentDTO> get(@PathVariable Long id) {
         return ResponseEntity.ok(paymentService.getById(id));
     }
