@@ -17,11 +17,12 @@ public class SettingController {
     private final SettingService settingService;
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('STAFF', 'USER')")
     public SettingDTO getById(@PathVariable Long id) {
         return settingService.getById(id);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_STAFF')")
+    @PreAuthorize("hasRole('STAFF')")
     @PutMapping("{id}")
     public SettingDTO updateById(@PathVariable Long id, @RequestBody @Valid SettingRequestDTO settingDTO) {
         return settingService.updateById(id, settingDTO);
@@ -29,14 +30,14 @@ public class SettingController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAuthority('ROLE_STAFF')")
+    @PreAuthorize("hasRole('MANAGER') OR hasPermission('ROLE_STAFF', 'ADD_INFORMATION')")
     public SettingDTO create(@RequestBody @Valid SettingRequestDTO settingDTO) {
         return settingService.createSetting(settingDTO);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasRole('MANAGER') OR hasPermission('ROLE_STAFF', 'REMOVE_INFORMATION')")
     public void delete(@PathVariable Long id) {
         settingService.deleteById(id);
     }
