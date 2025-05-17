@@ -62,4 +62,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
             Pageable pageable
     );
 
+
+    @Query("""
+        SELECT u FROM User u
+        LEFT JOIN u.roles ur
+        WHERE ur.role.name = :roleName
+        """)
+    User findAnyByRoleName(RoleName roleName);
 }

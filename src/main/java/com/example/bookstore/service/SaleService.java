@@ -41,6 +41,8 @@ public class SaleService {
         Long bookInstanceId = saleCreateRequestDTO.getBookInstanceId();
         BookInstance bookInstance = bookInstanceRepository.findById(
                 bookInstanceId).orElseThrow(() -> new EntityNotFoundException("BookInstance", bookInstanceId));
+        if(!bookInstance.getStatus().equals(BookInstanceStatus.AVAILABLE))
+            throw new BookInstanceNotAvailable("Book instance with is [%s] is not available".formatted(bookInstanceId));
         if(!bookInstance.getIsSellable())
             throw new BookInstanceNotAvailable("Book instance with is [%s] is not sellable".formatted(bookInstanceId));
         Long userId = saleCreateRequestDTO.getUserId();

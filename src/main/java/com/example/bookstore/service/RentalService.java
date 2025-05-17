@@ -2,6 +2,7 @@ package com.example.bookstore.service;
 
 import com.example.bookstore.enums.BookInstanceStatus;
 import com.example.bookstore.enums.RentalStatus;
+import com.example.bookstore.enums.RoleName;
 import com.example.bookstore.exception.*;
 import com.example.bookstore.persistance.entity.BookInstance;
 import com.example.bookstore.persistance.entity.Payment;
@@ -67,7 +68,7 @@ public class RentalService {
         return RentalDTO.mapToDTO(rentalRepository.save(rental));
     }
 
-    public RentalDTO create( RentalCreateDTO rentalCreateDTO) {
+    public RentalDTO create(RentalCreateDTO rentalCreateDTO) {
         Long userId = rentalCreateDTO.getUserId();
         Long bookInstanceId = rentalCreateDTO.getBookInstanceId();
         Long paymentId = rentalCreateDTO.getPaymentId();
@@ -83,6 +84,7 @@ public class RentalService {
         Rental paymentCheck = rentalRepository.findRentalByPaymentId(paymentId);
         if(paymentCheck != null)
             throw new ResourceAlreadyUsedException("Payment with id [%s] is already used".formatted(paymentId));
+        //checking if the book instance is currently rented
         List<Rental> rentals = rentalRepository.findByBookInstanceId(bookInstanceId);
         rentals.forEach(rental -> {
             if(rental.getActualReturnDate() == null)
@@ -100,6 +102,9 @@ public class RentalService {
             bookInstance.setIsRentable(false);
             bookInstance.setIsSellable(false);
             bookInstanceRepository.save(bookInstance);
+            User manager = userRepository.findAnyByRoleName(RoleName.ROLE_MANAGER);
+            if(manager != null)
+                emailServiceImpl.sendEmail(manager.getEmail(), "Book To Be Donated", "Dear %s \n\nThe book instance with id %s has reached its capacity and is now marked '%s'.".formatted(manager.getFirstname(), bookInstanceId, BookInstanceStatus.TO_BE_DONATED));
         }
         emailServiceImpl.sendEmail(user.getEmail(), emailSubject, emailMessage.formatted(user.getFirstname(), bookInstance.getBook().getTitle(), newRental.getExpectedReturnDate(), bookStoreName));
         return RentalDTO.mapToDTO(newRental);

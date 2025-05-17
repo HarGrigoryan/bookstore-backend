@@ -17,8 +17,6 @@ import java.util.List;
 
 @Entity
 @Table(name = "book_instance", uniqueConstraints = {@UniqueConstraint(columnNames = {"instance_number", "book_id"})})
-@Check(constraints = "status != 'SOLD' OR (is_rentable = false AND is_sellable = false)")
-@Check(constraints = "is_rentable = false OR max_rent_count > 0")
 @Getter
 @Setter
 @AllArgsConstructor
