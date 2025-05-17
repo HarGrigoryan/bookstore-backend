@@ -113,6 +113,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(exceptionResponse.getStatus()).body(exceptionResponse);
     }
 
+    @ExceptionHandler(RentalRequestNotValidException.class)
+    public ResponseEntity<ExceptionResponse> handleRentalRequestNotValidException(RentalRequestNotValidException e) {
+        final ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .withMessage(e.getMessage())
+                .withStatus(HttpStatus.BAD_REQUEST)
+                .build();
+        return ResponseEntity.status(exceptionResponse.getStatus()).body(exceptionResponse);
+    }
+
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ExceptionResponse> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
         final ExceptionResponse exceptionResponse = ExceptionResponse.builder()

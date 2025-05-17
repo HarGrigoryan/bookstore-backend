@@ -1,9 +1,6 @@
 package com.example.bookstore.service;
 
-import com.example.bookstore.exception.BookInstanceNotAvailable;
-import com.example.bookstore.exception.EntityAlreadyExistsException;
-import com.example.bookstore.exception.EntityDeletionException;
-import com.example.bookstore.exception.EntityNotFoundException;
+import com.example.bookstore.exception.*;
 import com.example.bookstore.persistance.entity.BookInstance;
 import com.example.bookstore.persistance.repository.BookInstanceRepository;
 import com.example.bookstore.persistance.repository.BookRepository;
@@ -17,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 
@@ -76,11 +75,18 @@ public class BookInstanceService {
         return PageResponseDTO.from(page);
     }
 
-    public BigDecimal getRentingCost(Long id) {
+    public BigDecimal getRentalCost(Long id, LocalDate startDate, LocalDate endDate) {
         BookInstance bookInstance = bookInstanceRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("BookInstance", id));
         if(!bookInstance.getIsRentable())
             throw new BookInstanceNotAvailable("Book instance with id [%s] is not rentable".formatted(id));
-        return bookInstance.getInitialPrice().divide(BigDecimal.valueOf(bookInstance.getMaxRentCount()), 5, RoundingMode.CEILING);
+        BigDecimal rentalCost = bookInstance.getInitialPrice().divide(BigDecimal.valueOf(bookInstance.getMaxRentCount()), 5, RoundingMode.CEILING);
+        if(startDate == null)
+            startDate = LocalDate.now();
+        if(endDate == null)
+            endDate = startDate.plusDays(1);
+        if(endDate.isBefore(startDate))
+            throw new RentalRequestNotValidException("The start date cannot be later than the end date");
+        return rentalCost.multiply(BigDecimal.valueOf(ChronoUnit.DAYS.between(startDate, endDate)));
     }
 
     public BigDecimal getSaleCost(Long id) {

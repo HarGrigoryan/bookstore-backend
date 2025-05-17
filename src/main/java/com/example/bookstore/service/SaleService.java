@@ -54,7 +54,7 @@ public class SaleService {
         Integer currentRentCount = bookInstanceRepository.getCurrentRentCount(bookInstanceId);
         BigDecimal salePrice = bookInstance.getInitialPrice().setScale(5, RoundingMode.CEILING);
         if(bookInstance.getIsRentable()) {
-            BigDecimal rentPrice = bookInstanceService.getRentingCost(bookInstanceId);
+            BigDecimal rentPrice = bookInstanceService.getRentalCost(bookInstanceId, null, null);
             salePrice = salePrice.subtract(rentPrice.multiply(BigDecimal.valueOf(currentRentCount))).setScale(5, RoundingMode.CEILING);
         }
         if(!payment.getAmount().equals(salePrice))

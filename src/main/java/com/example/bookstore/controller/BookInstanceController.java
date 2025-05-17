@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 
 @RestController
@@ -34,11 +35,12 @@ public class BookInstanceController {
         return bookInstanceService.getAll(criteria);
     }
 
-    @GetMapping("/{id}/renting-cost")
+    @GetMapping("/{id}/rental-cost")
     @PreAuthorize("hasAnyRole('USER', 'STAFF')")
-    public ResponseEntity<BigDecimal> getRentingCost(@PathVariable Long id) {
-        return ResponseEntity.ok(bookInstanceService.getRentingCost(id));
+    public ResponseEntity<BigDecimal> getRentingCost(@PathVariable Long id, @RequestParam(required = false) LocalDate startDate, @RequestParam(required = false) LocalDate endDate) {
+        return ResponseEntity.ok(bookInstanceService.getRentalCost(id, startDate, endDate));
     }
+
 
     @GetMapping("/{id}/sale-cost")
     @PreAuthorize("hasAnyRole('USER', 'STAFF')")

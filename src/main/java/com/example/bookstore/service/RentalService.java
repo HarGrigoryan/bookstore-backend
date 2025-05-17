@@ -23,7 +23,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 
@@ -77,7 +76,7 @@ public class RentalService {
             throw new BookInstanceNotAvailable("BookInstance with id [%s] is not rentable".formatted(bookInstanceId));
         Payment payment = paymentRepository.findById(paymentId).orElseThrow(() -> new EntityNotFoundException("Payment", paymentId));
         LocalDate expectedReturnDate = rentalCreateDTO.getExpectedReturnDate();
-        BigDecimal price = bookInstanceService.getRentingCost(bookInstanceId).multiply(BigDecimal.valueOf(ChronoUnit.DAYS.between(LocalDate.now(), expectedReturnDate)));
+        BigDecimal price = bookInstanceService.getRentalCost(bookInstanceId, LocalDate.now(), expectedReturnDate);
         if(!payment.getAmount().equals(price))
             throw new PaymentFailedException("Payment with id [%s] cannot be used to rent book instance with id [%s]".formatted(paymentId, bookInstanceId));
         User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User", userId));
