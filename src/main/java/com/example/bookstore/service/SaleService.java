@@ -7,11 +7,9 @@ import com.example.bookstore.exception.PaymentFailedException;
 import com.example.bookstore.persistance.entity.BookInstance;
 import com.example.bookstore.persistance.entity.Payment;
 import com.example.bookstore.persistance.entity.Sale;
-import com.example.bookstore.persistance.entity.User;
 import com.example.bookstore.persistance.repository.BookInstanceRepository;
 import com.example.bookstore.persistance.repository.PaymentRepository;
 import com.example.bookstore.persistance.repository.SaleRepository;
-import com.example.bookstore.persistance.repository.UserRepository;
 import com.example.bookstore.security.dto.SaleResponseDTO;
 import com.example.bookstore.service.dto.SaleCreateRequestDTO;
 import com.example.bookstore.service.dto.UserDTO;
@@ -28,7 +26,6 @@ public class SaleService {
 
     private final SaleRepository saleRepository;
     private final BookInstanceRepository bookInstanceRepository;
-    private final UserRepository userRepository;
     private final PaymentRepository paymentRepository;
     private final BookInstanceService bookInstanceService;
 
@@ -45,9 +42,6 @@ public class SaleService {
             throw new BookInstanceNotAvailable("Book instance with is [%s] is not available".formatted(bookInstanceId));
         if(!bookInstance.getIsSellable())
             throw new BookInstanceNotAvailable("Book instance with is [%s] is not sellable".formatted(bookInstanceId));
-        Long userId = saleCreateRequestDTO.getUserId();
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User", userId));
         Long paymentId = saleCreateRequestDTO.getPaymentId();
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new EntityNotFoundException("Payment", paymentId));
@@ -61,7 +55,6 @@ public class SaleService {
             throw new PaymentFailedException("Payment with id [%s] cannot be used to buy book instance [%s]".formatted(paymentId, bookInstanceId));
         Sale sale = new Sale();
         sale.setBookInstance(bookInstance);
-        sale.setUser(user);
         sale.setPayment(payment);
         saleRepository.save(sale);
         bookInstance.setIsSellable(false);
@@ -78,8 +71,7 @@ public class SaleService {
     }
 
     public UserDTO getUserBySaleId(Long id) {
-        Sale sale = saleRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Sale", id));
-        return UserDTO.toDTO(sale.getUser());
+        return UserDTO.toDTO(saleRepository.findUserBySaleId(id).orElseThrow(() -> new EntityNotFoundException("No user associated with sale id [%s] found".formatted(id))));
     }
 
 }

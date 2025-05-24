@@ -36,7 +36,7 @@ public class RentalController {
         return ResponseEntity.ok(rentalService.getById(id));
     }
 
-    //In case a rental is made by mistake (or the user changed their mind) and has to be canceled (a support STAFF will handle it)
+    // In case a rental is made by mistake (or the user changed their mind) and has to be canceled (a support STAFF will handle it)
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('STAFF')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {

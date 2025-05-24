@@ -9,7 +9,7 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.Instant;
 
-@Entity()
+@Entity
 @Table(name = "sale")
 @Getter
 @Setter
@@ -22,10 +22,6 @@ public class Sale {
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private BookInstance bookInstance;
-
-    @JoinColumn(name = "user_id")
-    @ManyToOne(fetch = FetchType.LAZY)
-    private User user;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "sold_At", nullable = false, updatable = false)

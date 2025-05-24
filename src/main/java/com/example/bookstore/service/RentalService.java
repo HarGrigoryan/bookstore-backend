@@ -60,15 +60,15 @@ public class RentalService {
         rental.setActualReturnDate(rentalUpdateDTO.getActualReturnDate());
         Long bookInstanceId = rentalUpdateDTO.getBookInstanceId();
         rental.setBookInstance(bookInstanceRepository.findById(bookInstanceId).orElseThrow(() -> new EntityNotFoundException("BookInstance", bookInstanceId)));
-        rental.setExpectedReturnDate(rentalUpdateDTO.getExpectedReturnDate());
-        Long userId = rentalUpdateDTO.getUserId();
-        rental.setUser(userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User", userId)));
+        LocalDate expectedReturnDate = rentalUpdateDTO.getExpectedReturnDate();
+        if(expectedReturnDate != null) {
+            rental.setExpectedReturnDate(expectedReturnDate);
+        }
         rental.setStatus(rentalUpdateDTO.getStatus());
         return RentalDTO.mapToDTO(rentalRepository.save(rental));
     }
 
     public RentalDTO create(RentalCreateDTO rentalCreateDTO) {
-        Long userId = rentalCreateDTO.getUserId();
         Long bookInstanceId = rentalCreateDTO.getBookInstanceId();
         Long paymentId = rentalCreateDTO.getPaymentId();
         BookInstance bookInstance = bookInstanceRepository.findById(bookInstanceId).orElseThrow(() -> new EntityNotFoundException("BookInstance", bookInstanceId));
@@ -79,7 +79,6 @@ public class RentalService {
         BigDecimal price = bookInstanceService.getRentalCost(bookInstanceId, LocalDate.now(), expectedReturnDate);
         if(!payment.getAmount().equals(price))
             throw new PaymentFailedException("Payment with id [%s] cannot be used to rent book instance with id [%s]".formatted(paymentId, bookInstanceId));
-        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User", userId));
         Rental paymentCheck = rentalRepository.findRentalByPaymentId(paymentId);
         if(paymentCheck != null)
             throw new ResourceAlreadyUsedException("Payment with id [%s] is already used".formatted(paymentId));
@@ -91,7 +90,6 @@ public class RentalService {
         });
         Rental newRental = new Rental();
         newRental.setBookInstance(bookInstance);
-        newRental.setUser(user);
         newRental.setPayment(payment);
         newRental.setExpectedReturnDate(expectedReturnDate);
         newRental.setStatus(RentalStatus.IN_PROGRESS);
@@ -105,12 +103,12 @@ public class RentalService {
             if(manager != null)
                 emailServiceImpl.sendEmail(manager.getEmail(), "Book To Be Donated", "Dear %s \n\nThe book instance with id %s has reached its capacity and is now marked '%s'.".formatted(manager.getFirstname(), bookInstanceId, BookInstanceStatus.TO_BE_DONATED));
         }
+        User user = userRepository.findById(payment.getUser().getId()).orElseThrow(() -> new EntityNotFoundException("User", payment.getUser().getId()));
         emailServiceImpl.sendEmail(user.getEmail(), emailSubject, emailMessage.formatted(user.getFirstname(), bookInstance.getBook().getTitle(), newRental.getExpectedReturnDate(), bookStoreName));
         return RentalDTO.mapToDTO(newRental);
     }
 
     public UserDTO getUserByRentalId(Long rentalId) {
-        Rental rental = rentalRepository.findById(rentalId).orElseThrow(() -> new EntityNotFoundException("Rental", rentalId));
-        return UserDTO.toDTO(rental.getUser());
+        return UserDTO.toDTO(rentalRepository.findUserByRentalId(rentalId).orElseThrow(() -> new EntityNotFoundException("No user associated with rental id [%s] found".formatted(rentalId))));
     }
 }

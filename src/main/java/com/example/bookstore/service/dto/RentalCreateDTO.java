@@ -18,9 +18,6 @@ public class RentalCreateDTO {
     private Long bookInstanceId;
 
     @NotBlank
-    private Long userId;
-
-    @NotBlank
     private LocalDate expectedReturnDate;
 
     @NotBlank

@@ -19,8 +19,6 @@ public class RentalDTO {
 
     private Long bookInstanceId;
 
-    private Long userId;
-
     private LocalDate expectedReturnDate;
 
     private LocalDate actualReturnDate;
@@ -33,7 +31,6 @@ public class RentalDTO {
         RentalDTO dto = new RentalDTO();
         dto.setId(rental.getId());
         dto.setBookInstanceId(rental.getBookInstance().getId());
-        dto.setUserId(rental.getUser().getId());
         dto.setExpectedReturnDate(rental.getExpectedReturnDate());
         dto.setActualReturnDate(rental.getActualReturnDate());
         dto.setStatus(rental.getStatus());

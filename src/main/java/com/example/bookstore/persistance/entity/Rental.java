@@ -13,8 +13,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "rental", uniqueConstraints = {@UniqueConstraint(columnNames = {"book_instance_id", "user_id", "payment_id"})})
-@Check(constraints = "actual_return_date <= CURRENT_DATE")
+@Table(name = "rental")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -29,10 +28,6 @@ public class Rental {
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private BookInstance bookInstance;
-
-    @JoinColumn(name = "user_id")
-    @ManyToOne(fetch = FetchType.LAZY)
-    private User user;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "rented_at", nullable = false, updatable = false)

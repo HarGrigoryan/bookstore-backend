@@ -18,9 +18,6 @@ public class RentalUpdateDTO {
     @NotBlank
     private Long bookInstanceId;
 
-    @NotBlank
-    private Long userId;
-
     private LocalDate expectedReturnDate;
 
     private LocalDate actualReturnDate;

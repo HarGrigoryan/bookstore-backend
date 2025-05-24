@@ -14,8 +14,6 @@ public class SaleResponseDTO {
 
     private Long bookInstanceId;
 
-    private Long userId;
-
     private Instant soldAt;
 
     private Long paymentId;
@@ -24,7 +22,6 @@ public class SaleResponseDTO {
         SaleResponseDTO dto = new SaleResponseDTO();
         dto.setId(sale.getId());
         dto.setBookInstanceId(sale.getBookInstance().getId());
-        dto.setUserId(sale.getUser().getId());
         dto.setSoldAt(sale.getSoldAt());
         dto.setPaymentId(sale.getPayment().getId());
         return dto;
