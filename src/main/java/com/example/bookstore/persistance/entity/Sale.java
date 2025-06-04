@@ -28,7 +28,7 @@ public class Sale {
     @CreationTimestamp
     private Instant soldAt;
 
-    @JoinColumn(name = "paymend_id")
+    @JoinColumn(name = "payment_id")
     @OneToOne(fetch = FetchType.LAZY)
     private Payment payment;
 

@@ -4,6 +4,7 @@ import com.example.bookstore.enums.BookInstanceStatus;
 import com.example.bookstore.exception.BookInstanceNotAvailable;
 import com.example.bookstore.exception.EntityNotFoundException;
 import com.example.bookstore.exception.PaymentFailedException;
+import com.example.bookstore.exception.ResourceAlreadyUsedException;
 import com.example.bookstore.persistance.entity.BookInstance;
 import com.example.bookstore.persistance.entity.Payment;
 import com.example.bookstore.persistance.entity.Sale;
@@ -43,6 +44,9 @@ public class SaleService {
         if(!bookInstance.getIsSellable())
             throw new BookInstanceNotAvailable("Book instance with is [%s] is not sellable".formatted(bookInstanceId));
         Long paymentId = saleCreateRequestDTO.getPaymentId();
+        Sale paymentCheck = saleRepository.findByPaymentId(paymentId).orElse(null);
+        if(paymentCheck != null)
+            throw new ResourceAlreadyUsedException("Payment with id [%s] is already used".formatted(paymentId));
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new EntityNotFoundException("Payment", paymentId));
         Integer currentRentCount = bookInstanceRepository.getCurrentRentCount(bookInstanceId);

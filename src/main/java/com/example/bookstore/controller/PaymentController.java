@@ -17,7 +17,7 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @PostMapping
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') AND #paymentRequestDTO.userId.equals(authentication.principal.userId)")
     public ResponseEntity<PaymentDTO> create(@RequestBody @Valid PaymentRequestDTO paymentRequestDTO) {
         return ResponseEntity.ok(paymentService.pay(paymentRequestDTO));
     }

@@ -15,5 +15,6 @@ public enum PermissionName {
     UPDATE_COUPON,
     REMOVE_COUPON,
     VIEW_COUPON,
+    GENERATE_REPORT
 
 }
