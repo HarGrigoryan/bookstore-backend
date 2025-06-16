@@ -1,5 +1,6 @@
 package com.example.bookstore.persistance.repository;
 
+import com.example.bookstore.persistance.entity.Coupon;
 import com.example.bookstore.persistance.entity.Sale;
 import com.example.bookstore.persistance.entity.User;
 import com.example.bookstore.service.projection.SalePaymentProjection;
@@ -67,4 +68,20 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
         WHERE s.payment.id = :paymentId
         """)
     Optional<Sale> findByPaymentId(Long paymentId);
+
+    @Query("""
+        SELECT COUNT(s)
+        FROM Sale s
+        WHERE s.coupon = :coupon
+        """)
+    int userCountByCoupon(Coupon coupon);
+
+    @Query(value = """
+        SELECT COUNT(s.id)
+        FROM sale s
+        LEFT JOIN payment p ON s.payment_id = p.id
+        WHERE s.coupon_id = :couponId
+        AND  p.user_id = :userId
+        """, nativeQuery = true)
+    int userCountByCouponAndUser(Long couponId, Long userId);
 }

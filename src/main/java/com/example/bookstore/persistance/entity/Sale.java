@@ -32,4 +32,8 @@ public class Sale {
     @OneToOne(fetch = FetchType.LAZY)
     private Payment payment;
 
+    @JoinColumn(name = "coupon_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Coupon coupon;
+
 }

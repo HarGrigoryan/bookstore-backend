@@ -16,10 +16,19 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ReportException.class)
-    public ResponseEntity<Object> reportException(ReportException e) {
+    public ResponseEntity<ExceptionResponse> reportException(ReportException e) {
         final ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .withMessage(e.getMessage())
                 .withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+                .build();
+        return new ResponseEntity<>(exceptionResponse, exceptionResponse.getStatus());
+    }
+
+    @ExceptionHandler(CouponNotValidException.class)
+    public ResponseEntity<ExceptionResponse> couponNotValidException(CouponNotValidException e) {
+        final ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .withStatus(HttpStatus.BAD_REQUEST)
+                .withMessage(e.getMessage())
                 .build();
         return new ResponseEntity<>(exceptionResponse, exceptionResponse.getStatus());
     }

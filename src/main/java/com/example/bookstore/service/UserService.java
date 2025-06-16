@@ -70,6 +70,7 @@ public class UserService {
 
         user.setFirstname(updateDto.getFirstname());
         user.setLastname(updateDto.getLastname());
+        user.setEnabled(updateDto.isEnabled());
 
         return UserDTO.toDTO(userRepository.save(user));
     }

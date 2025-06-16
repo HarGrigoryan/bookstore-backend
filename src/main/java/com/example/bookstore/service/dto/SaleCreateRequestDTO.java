@@ -16,4 +16,6 @@ public class SaleCreateRequestDTO {
 
     @NotBlank
     private Long paymentId;
+
+    private String couponCode;
 }

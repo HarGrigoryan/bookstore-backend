@@ -41,11 +41,10 @@ public class BookInstanceController {
         return ResponseEntity.ok(bookInstanceService.getRentalCost(id, startDate, endDate));
     }
 
-
     @GetMapping("/{id}/sale-cost")
     @PreAuthorize("hasAnyRole('USER', 'STAFF')")
-    public ResponseEntity<BigDecimal> getSaleCost(@PathVariable Long id) {
-        return ResponseEntity.ok(bookInstanceService.getSaleCost(id));
+    public ResponseEntity<BigDecimal> getSaleCost(@PathVariable Long id, @RequestParam(required = false) String couponCode) {
+        return ResponseEntity.ok(bookInstanceService.getSaleCost(id, couponCode));
     }
 
     @PostMapping

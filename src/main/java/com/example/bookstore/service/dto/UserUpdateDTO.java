@@ -14,4 +14,7 @@ public class UserUpdateDTO {
     @NotBlank
     private String lastname;
 
+    @NotBlank
+    private boolean enabled;
+
 }

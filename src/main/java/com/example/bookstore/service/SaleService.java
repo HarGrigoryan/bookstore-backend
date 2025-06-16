@@ -1,14 +1,13 @@
 package com.example.bookstore.service;
 
 import com.example.bookstore.enums.BookInstanceStatus;
-import com.example.bookstore.exception.BookInstanceNotAvailable;
-import com.example.bookstore.exception.EntityNotFoundException;
-import com.example.bookstore.exception.PaymentFailedException;
-import com.example.bookstore.exception.ResourceAlreadyUsedException;
+import com.example.bookstore.exception.*;
 import com.example.bookstore.persistance.entity.BookInstance;
+import com.example.bookstore.persistance.entity.Coupon;
 import com.example.bookstore.persistance.entity.Payment;
 import com.example.bookstore.persistance.entity.Sale;
 import com.example.bookstore.persistance.repository.BookInstanceRepository;
+import com.example.bookstore.persistance.repository.CouponRepository;
 import com.example.bookstore.persistance.repository.PaymentRepository;
 import com.example.bookstore.persistance.repository.SaleRepository;
 import com.example.bookstore.security.dto.SaleResponseDTO;
@@ -29,6 +28,7 @@ public class SaleService {
     private final BookInstanceRepository bookInstanceRepository;
     private final PaymentRepository paymentRepository;
     private final BookInstanceService bookInstanceService;
+    private final CouponRepository couponRepository;
 
     public SaleResponseDTO getById(Long id) {
         return SaleResponseDTO.toDTO(saleRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Sale", id)));
@@ -55,11 +55,19 @@ public class SaleService {
             BigDecimal rentPrice = bookInstanceService.getRentalCost(bookInstanceId, null, null);
             salePrice = salePrice.subtract(rentPrice.multiply(BigDecimal.valueOf(currentRentCount))).setScale(5, RoundingMode.CEILING);
         }
+        String couponCode = saleCreateRequestDTO.getCouponCode();
+        Coupon coupon = null;
+        if(couponCode != null)
+        {
+             coupon = validateCoupon(couponCode,  payment.getUser().getId());
+            salePrice = salePrice.multiply(BigDecimal.valueOf(1).subtract(coupon.getDiscountPercentage().divide(BigDecimal.valueOf(100), 5, RoundingMode.CEILING))).setScale(5, RoundingMode.CEILING);
+        }
         if(!payment.getAmount().equals(salePrice))
             throw new PaymentFailedException("Payment with id [%s] cannot be used to buy book instance [%s]".formatted(paymentId, bookInstanceId));
         Sale sale = new Sale();
         sale.setBookInstance(bookInstance);
         sale.setPayment(payment);
+        sale.setCoupon(coupon);
         saleRepository.save(sale);
         bookInstance.setIsSellable(false);
         bookInstance.setIsRentable(false);
@@ -76,6 +84,20 @@ public class SaleService {
 
     public UserDTO getUserBySaleId(Long id) {
         return UserDTO.toDTO(saleRepository.findUserBySaleId(id).orElseThrow(() -> new EntityNotFoundException("No user associated with sale id [%s] found".formatted(id))));
+    }
+
+    private Coupon validateCoupon(String couponCode, Long userId) {
+        Coupon coupon = couponRepository.findByCode(couponCode).orElseThrow(() -> new CouponNotValidException("No coupon with the code '%s' found.".formatted(couponCode)));
+        if(!coupon.getIsActive())
+            throw new CouponNotValidException("Coupon with code [%s] is not active".formatted(couponCode));
+        int usageCount = saleRepository.userCountByCoupon(coupon);
+        if(usageCount + 1 == coupon.getUsageLimit())
+            coupon.setIsActive(false);
+        int usagePerUserCount = saleRepository.userCountByCouponAndUser(coupon.getId(), userId);
+        if(usagePerUserCount == coupon.getUsageLimitPerUser())
+            throw new CouponNotValidException
+                    ("Coupon with code '%s' cannot be used by the user with id [%s] anymore.".formatted(couponCode, userId));
+        return coupon;
     }
 
 }

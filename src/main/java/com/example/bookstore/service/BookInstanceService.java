@@ -2,8 +2,10 @@ package com.example.bookstore.service;
 
 import com.example.bookstore.exception.*;
 import com.example.bookstore.persistance.entity.BookInstance;
+import com.example.bookstore.persistance.entity.Coupon;
 import com.example.bookstore.persistance.repository.BookInstanceRepository;
 import com.example.bookstore.persistance.repository.BookRepository;
+import com.example.bookstore.persistance.repository.CouponRepository;
 import com.example.bookstore.service.criteria.BookInstanceSearchCriteria;
 import com.example.bookstore.service.dto.BookInstanceDTO;
 import com.example.bookstore.service.dto.BookInstanceRequestDTO;
@@ -25,6 +27,7 @@ public class BookInstanceService {
 
     private final BookInstanceRepository bookInstanceRepository;
     private final BookRepository bookRepository;
+    private final CouponRepository couponRepository;
 
 
     public BookInstanceDTO getById(Long id) {
@@ -89,10 +92,21 @@ public class BookInstanceService {
         return rentalCost.multiply(BigDecimal.valueOf(ChronoUnit.DAYS.between(startDate, endDate)));
     }
 
-    public BigDecimal getSaleCost(Long id) {
+    public BigDecimal getSaleCost(Long id, String couponCode) {
         BookInstance bookInstance = bookInstanceRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("BookInstance", id));
         if(!bookInstance.getIsSellable())
             throw new BookInstanceNotAvailable("Book instance with id [%s] is not sellable".formatted(id));
-        return bookInstance.getInitialPrice().multiply(BigDecimal.valueOf(1 - bookInstanceRepository.getCurrentRentCount(id) * (100D / bookInstance.getMaxRentCount())));
+        BigDecimal price = bookInstance.getInitialPrice();
+        Integer maxRentCount = bookInstance.getMaxRentCount();
+        if(maxRentCount != null && maxRentCount > 0) {
+            price = price.multiply(BigDecimal.valueOf(1 - bookInstanceRepository.getCurrentRentCount(id) * (100D / maxRentCount)));
+        }
+        if(couponCode != null)
+        {
+            Coupon coupon = couponRepository.findByCode(couponCode).orElseThrow(() -> new CouponNotValidException("Coupon code '%s' not found".formatted(couponCode)));
+            BigDecimal remainingPercentage = BigDecimal.valueOf(1).subtract(coupon.getDiscountPercentage().divide(BigDecimal.valueOf(100), 5, RoundingMode.CEILING));
+            price = price.multiply(remainingPercentage);
+        }
+        return price;
     }
 }

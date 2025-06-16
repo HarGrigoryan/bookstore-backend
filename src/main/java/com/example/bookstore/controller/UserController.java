@@ -86,6 +86,5 @@ public class UserController {
         userService.revokePermissions(id, permissionUpdateRequestDTO);
         return ResponseEntity.noContent().build();
     }
-
 }
 

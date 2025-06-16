@@ -18,12 +18,15 @@ public class SaleResponseDTO {
 
     private Long paymentId;
 
+    private Long couponId;
+
     public static SaleResponseDTO toDTO(Sale sale) {
         SaleResponseDTO dto = new SaleResponseDTO();
         dto.setId(sale.getId());
         dto.setBookInstanceId(sale.getBookInstance().getId());
         dto.setSoldAt(sale.getSoldAt());
         dto.setPaymentId(sale.getPayment().getId());
+        dto.setCouponId(sale.getCoupon().getId());
         return dto;
     }
 }

@@ -3,6 +3,7 @@ package com.example.bookstore.controller;
 import com.example.bookstore.service.CouponService;
 import com.example.bookstore.service.dto.CouponDTO;
 import com.example.bookstore.service.dto.CouponRequestDTO;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,13 +38,13 @@ public class CouponController {
     }
 
     @PostMapping
-    @PreAuthorize("hasPermission('ANY', 'CREATE_COUPON')")
-    public ResponseEntity<CouponDTO> createCoupon(@RequestBody CouponRequestDTO coupon) {
+    @PreAuthorize("hasRole('MANAGER') OR hasPermission('ANY', 'CREATE_COUPON')")
+    public ResponseEntity<CouponDTO> createCoupon(@RequestBody @Valid CouponRequestDTO coupon) {
         return ResponseEntity.ok(couponService.createCoupon(coupon));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasPermission('ANY', 'UPDATE_COUPON')")
+    @PreAuthorize("hasRole('MANAGER') OR hasPermission('ANY', 'UPDATE_COUPON')")
     public ResponseEntity<CouponDTO> updateCoupon(@PathVariable Long id, @RequestBody CouponRequestDTO coupon) {
         return ResponseEntity.ok(couponService.updateCoupon(id, coupon));
     }
