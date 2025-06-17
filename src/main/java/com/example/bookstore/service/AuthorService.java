@@ -30,9 +30,7 @@ public class AuthorService {
     }
 
     public AuthorDTO getAuthorById(Long id) {
-        Author author = authorRepository.findById(id).orElse(null);
-        if(author == null)
-            throw new EntityNotFoundException("Author", id);
+        Author author = authorRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Author", id));
         return authorMapper.entityToDto(author);
     }
 

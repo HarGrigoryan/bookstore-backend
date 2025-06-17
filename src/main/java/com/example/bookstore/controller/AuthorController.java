@@ -57,7 +57,7 @@ public class AuthorController {
         return authorService.updateAuthor(authorDto);
     }
 
-    @PostMapping()
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('MANAGER') OR hasPermission('ROLE_STAFF', 'ADD_INFORMATION')")
     public AuthorDTO createAuthor(@RequestBody @Valid AuthorCreateDTO authorCreateDTO)
