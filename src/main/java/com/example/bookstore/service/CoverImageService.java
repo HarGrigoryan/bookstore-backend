@@ -8,10 +8,12 @@ import com.example.bookstore.persistance.entity.FileInformation;
 import com.example.bookstore.persistance.repository.BookCoverImageRepository;
 import com.example.bookstore.persistance.repository.FileInformationRepository;
 import com.example.bookstore.util.Utilities;
+import jakarta.transaction.Transactional;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -23,7 +25,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentMap;
 
 @Service
 public class CoverImageService {
@@ -39,6 +40,9 @@ public class CoverImageService {
     @Value("${app.image.thumbnail.size}")
     private Integer THUMBNAIL_SIZE;
 
+    @Value("${cover.images.count.per.process}")
+    private Integer COUNT_PER_PROCESS;
+
     private final BookCoverImageRepository bookCoverImageRepository;
 
     @Autowired
@@ -47,17 +51,18 @@ public class CoverImageService {
         this.bookCoverImageRepository = bookCoverImageRepository;
     }
 
-    public void saveImages(List<FileInformation> urls, List<String> bookIds, ConcurrentMap<String, Book> stringBookMap, int from, int upTo)
+    public void saveImages(List<BookCoverImage> bookCoverImages, int from, int upTo)
     {
-        List<FileInformation> coverImageFilesToSave = new ArrayList<>(urls.size());
-        List<BookCoverImage> bookCoverImagesToSave = new ArrayList<>(urls.size());
-        for (int i = from; i < upTo && i < bookIds.size(); i++) {
-            String bookId = bookIds.get(i);
+        int size = upTo - from + 1;
+        List<FileInformation> coverImageFilesToSave = new ArrayList<>(size * 3);
+        List<BookCoverImage> bookCoverImagesToSave = new ArrayList<>(size * 2);
+        for (int i = from; i < upTo && i < bookCoverImages.size(); i++) {
+            Book book = bookCoverImages.get(i).getBook();
+            String bookId = book.getBookId();
             String path = IMAGES_ROOT;
-            Book book = stringBookMap.get(bookId);
             String title = book.getTitle();
-            FileInformation coverImageInformation = urls.get(i);
-            bookCoverImagesToSave.add(createBookCoverImage(book, coverImageInformation, PictureSize.ORIGINAL));
+            FileInformation coverImageInformation = bookCoverImages.get(i).getFileInformation();
+            //bookCoverImagesToSave.add(createBookCoverImage(book, coverImageInformation, PictureSize.ORIGINAL));
             String url = coverImageInformation.getFileUrl();
             FileInformation smallCoverImageInformation = FileInformation.of(url);
             bookCoverImagesToSave.add(createBookCoverImage(book, smallCoverImageInformation, PictureSize.THUMBNAIL));
@@ -126,6 +131,14 @@ public class CoverImageService {
         bookCoverImageRepository.saveAll(bookCoverImagesToSave);
         System.out.println("Finished saving images");
 
+
+    }
+
+    @Scheduled(cron = "${scheduler.daily.cron}", zone = "${scheduler.daily.zone}")
+    @Transactional
+    public void downloadImages(){
+        List<BookCoverImage> bookCoverImages = bookCoverImageRepository.findPendingTop(COUNT_PER_PROCESS);
+        saveImages(bookCoverImages, 0, COUNT_PER_PROCESS);
     }
 
     private static void completeFileInformation(FileInformation coverImageInformation, String fileName, String absolutePath, String fileFormat) {

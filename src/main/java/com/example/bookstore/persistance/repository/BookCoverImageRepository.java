@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface BookCoverImageRepository extends JpaRepository<BookCoverImage, Long> {
 
@@ -16,4 +18,20 @@ public interface BookCoverImageRepository extends JpaRepository<BookCoverImage, 
             WHERE b.book.id = :bookId
             AND b.pictureSize = :pictureSize""")
     String getImage(Long bookId, PictureSize pictureSize);
+
+    @Query(value = """
+        SELECT b.*
+        FROM book_cover_image b
+        LEFT JOIN file_information f ON b.file_information_id = f.id
+        WHERE f.status = 'PENDING'
+        ORDER BY f.id
+        LIMIT :countPerProcess
+    """, nativeQuery = true)
+    List<BookCoverImage> findPendingTop(Integer countPerProcess);
+
+    /*SELECT b
+    FROM BookCoverImage b
+    LEFT JOIN FileInformation f ON b.fileInformation.id = f.id
+    WHERE f.status = 'PENDING'
+    LIMIT :countPerProcess*/
 }

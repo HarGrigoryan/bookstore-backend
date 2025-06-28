@@ -1,6 +1,7 @@
 package com.example.bookstore.service;
 
 import com.example.bookstore.enums.AuthorRole;
+import com.example.bookstore.enums.PictureSize;
 import com.example.bookstore.exception.EntityAlreadyExistsException;
 import com.example.bookstore.exception.EntityNotFoundException;
 import com.example.bookstore.exception.UnsupportedFormatException;
@@ -13,7 +14,6 @@ import com.example.bookstore.service.mapper.BookCreateResponseDtoMapper;
 import com.example.bookstore.service.dto.AuthorResponseDTO;
 import com.example.bookstore.service.dto.BookCreateDTO;
 import com.example.bookstore.service.dto.BookUpdateRequestDTO;
-import com.example.bookstore.util.Utilities;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -45,6 +45,7 @@ public class BookService {
     private final AwardRepository awardRepository;
     private final BookAwardRepository bookAwardRepository;
     private final CoverImageService coverImageService;
+    private final BookCoverImageRepository bookCoverImageRepository;
     private FileInformationRepository fileInformationRepository;
 
 
@@ -127,7 +128,12 @@ public class BookService {
         saveBookAwards(bookCreateDto.getAwardIds(), book);
         FileInformation fileInformation = FileInformation.of(bookCreateDto.getCoverImageURL());
         fileInformationRepository.save(fileInformation);
-        coverImageService.saveImages(Collections.singletonList(fileInformation), Collections.singletonList(bookId), Utilities.singleElementConcurrentMap(bookId, book),0, 1);
+        BookCoverImage bookCoverImage = new BookCoverImage();
+        bookCoverImage.setBook(book);
+        bookCoverImage.setFileInformation(fileInformation);
+        bookCoverImage.setPictureSize(PictureSize.ORIGINAL);
+        bookCoverImageRepository.save(bookCoverImage);
+        coverImageService.saveImages(Collections.singletonList(bookCoverImage),0, 1);
         return (new BookCreateResponseDtoMapper()).map(book);
     }
 

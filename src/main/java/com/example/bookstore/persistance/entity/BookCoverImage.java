@@ -32,4 +32,11 @@ public class BookCoverImage {
     @Enumerated(EnumType.STRING)
     private PictureSize pictureSize;
 
+    public static BookCoverImage from(FileInformation coverImg, Book book) {
+        BookCoverImage bookCoverImage = new BookCoverImage();
+        bookCoverImage.setFileInformation(coverImg);
+        bookCoverImage.setBook(book);
+        bookCoverImage.setPictureSize(PictureSize.ORIGINAL);
+        return bookCoverImage;
+    }
 }

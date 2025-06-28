@@ -52,6 +52,7 @@ public class CSVUploadService {
     private final EntityMapRegistry entityMapRegistry;
     private final FileInformationRepository fileInformationRepository;
     private final CoverImageService coverImageService;
+    private final BookCoverImageRepository bookCoverImageRepository;
 
     @Value("${app.image.processing.enabled}")
     private boolean imageProcessingEnabled;
@@ -142,7 +143,7 @@ public class CSVUploadService {
                 }
                 //populating the lists for image saving
                 bookIds.add(bookId);
-                urls.add(FileInformation.of(record.get("coverImg").trim()));
+                urls.add( FileInformation.of(record.get("coverImg").trim()));
 
                 //saving all the genres
                 String genres = record.get("genres");
@@ -265,9 +266,14 @@ public class CSVUploadService {
 
         if(imageProcessingEnabled) {
             List<FileInformation> finalUrls = urls;
-            List<String> finalBookIds = bookIds;
-            CompletableFuture.runAsync(() -> coverImageService.saveImages(finalUrls, finalBookIds,
-                    (ConcurrentMap<String, Book>) entityMapRegistry.entityMap(Book.class), 0,200));
+            List<BookCoverImage> bookCoverImagesToSave = new ArrayList<>(finalUrls.size());
+            for (int i = 0; i < finalUrls.size(); i++) {
+                FileInformation tempFileInformation = finalUrls.get(i);
+                Book tempBook = ((ConcurrentMap<String, Book>) entityMapRegistry.entityMap(Book.class)).get(bookIds.get(i));
+                bookCoverImagesToSave.add(BookCoverImage.from(tempFileInformation, tempBook));
+            }
+            bookCoverImageRepository.saveAll(bookCoverImagesToSave);
+            CompletableFuture.runAsync(() -> coverImageService.saveImages(bookCoverImagesToSave, 0,200));
         }
         return true;
     }
@@ -312,7 +318,6 @@ public class CSVUploadService {
         List<BookSeries> bookSeriesToSave = new ArrayList<>(CHUNK_SIZE*2);
         List<BookAward> bookAwardsToSave = new ArrayList<>(CHUNK_SIZE*10);
         List<Reviews> reviewsToSave = new ArrayList<>(CHUNK_SIZE);
-        //List<RatingByStars> ratingByStarsToSave = new ArrayList<>(5*CHUNK_SIZE);
         List<BookGenre> bookGenresToSave = new ArrayList<>(CHUNK_SIZE*3);
         List<BookCharacter> bookCharactersToSave = new ArrayList<>(CHUNK_SIZE*10);
 
