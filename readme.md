@@ -30,9 +30,9 @@ This section documents the main REST endpoints for the application. All endpoint
 
 ### Books
 - `GET /books`
-    - Description: List books with pagination, sorting and filters.
-    - Query params: `page`, `size`, `sort`, `q` (search), `category`, `authorId`, `minPrice`, `maxPrice`
-    - Response: paginated list `{ content: [...], page: ..., totalPages: ... }`
+    - **Description:** List books with pagination, sorting and filters.
+    - **Filters:** `page`, `size`, `sort`, `title`, `publisher`, `authorId`, `authorName`, `edition`...
+    - **Response:** paginated list `{ content: [...], page: ..., totalPages: ... }`
 
 - `GET /books/{id}`
     - Description: Get book details by ID.
@@ -74,11 +74,66 @@ This section documents the main REST endpoints for the application. All endpoint
       }
       ```
 
-#### Bulk CSV Upload Pipeline
+    - `PUT /books/{id}` *(MANAGER or STAFF role required)*
+    - **Description:** Update an existing book. Accepts a `BookUpdateRequestDTO`.
+    - **Content-Type:** `application/json`
+
+    - `DELETE /books/{id}`  *(MANAGER role or STAFF with REMOVE_INFORMATION permission required)*
+    - **Description:** Delete a single book by numeric DB id.
+    - **Response:** `204 No Content` on success.
+
+    - `DELETE /books` (batch)
+    - **Description:** Delete multiple books in one request. Accepts JSON body `List<Long>` of book ids.
+    - **Body example:**
+      ```json
+      [123, 124, 125]
+      ```
+      - **Authorization:** same as single-delete
+      - **Response:** `204 No Content` on success.
+
+    - `POST /books/{id}/review` and `POST /books/{id}/rate` *(USER role required)
+    - **Description:** Extra endpoints for review and rating exist (see controller) — adhere to their respective authorization rules (`ADD_INFORMATION`, `USER` role for rating, etc.).
+
+    #### Bulk CSV Upload Pipeline
+    - `POST /books/csv` (CSV upload) *(MANAGER role or STAFF with UPLOAD_CSV permission required)*
+    - **Description:** Upload CSV of books (multipart/form-data `file` field). Returns boolean success currently. 
+      - The processing of the input file is done utilizing multithreading to achieve fast execution.
+    - A sample bulk-import 'books.csv' file can be found in the repository.
+
 
 ### Authors
 
-> pending
+- `GET /authors`
+    - **Description:** List authors with pagination and optional filters.
+    - **Filters:** `page`, `size`, `fullName` (partial match), `isOnGoodreads` (`true`|`false`)
+    - **Notes:** Paging is driven by `AuthorSearchCriteria` and results are sorted by `fullName` by default unless otherwise specified.
+    - **Response:** paginated list `{ content: [...], page: ..., totalPages: ... }`
+
+- `GET /authors/{id}`
+    - **Description:** Get author details by ID. Includes basic author fields and read-only metadata about associated books (via `BookAuthor` relationships).
+
+- `POST /authors` *(MANAGER role or STAFF with permission ADD_INFORMATION required)*
+    - **Description:** Create a new author.
+    - **Content-Type:** `application/json`
+    - **Required fields:** `fullName`
+    - **Validation notes:**
+        - `fullName` must be unique (DB constraint). The API returns a `409 Conflict` if uniqueness is violated.
+        - The API generates the `id` (DB sequence `author_id_seq`). Clients should **not** send an `id`.
+    - **Example request body:**
+      ```json
+      {
+        "fullName": "J. R. R. Tolkien",
+        "isOnGoodreads": true
+      }
+      ```
+
+- `PUT /authors/{id}` *(MANAGER or STAFF role required)*
+    - **Description:** Update author fields (e.g., rename, toggle `isOnGoodreads`). Partial updates allowed if `PATCH` is implemented.
+    - **Body:** same shape as create DTO; `fullName` remains required if present.
+
+- `DELETE /authors/{id}` *(MANAGER role or STAFF with REMOVE_INFORMATION permission required)*
+    - **Description:** Remove an author (soft delete recommended to preserve historical references). If cascade behavior exists, ensure it preserves `BookAuthor` integrity.
+
 
 ### Publishers
 
