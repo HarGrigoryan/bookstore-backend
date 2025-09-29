@@ -28,10 +28,4 @@ public interface BookCoverImageRepository extends JpaRepository<BookCoverImage, 
         LIMIT :countPerProcess
     """, nativeQuery = true)
     List<BookCoverImage> findPendingTop(Integer countPerProcess);
-
-    /*SELECT b
-    FROM BookCoverImage b
-    LEFT JOIN FileInformation f ON b.fileInformation.id = f.id
-    WHERE f.status = 'PENDING'
-    LIMIT :countPerProcess*/
 }
