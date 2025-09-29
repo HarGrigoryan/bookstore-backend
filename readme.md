@@ -3,6 +3,7 @@
 ## Table of Contents
 
 - [About](#about)
+- [Security (Auth & Users, Roles & Permissions)](#securityauth-users-roles--permissions)
 - [API Endpoints (CRUD)](#api-endpoints-crud)
     - [Books](#books)
         - [Bulk CSV Upload Pipeline](#bulk-csv-upload-pipeline)
@@ -11,7 +12,6 @@
     - [File Uploads (covers)](#file-uploads-covers)
     - [Publishers](#publishers)
     - [Payments](#payments)
-- [Security (Auth & Users, Roles & Permissions)](#securityauth-users-roles--permissions)
 - [Report Generation](#report-generation)
 - [Testing](#testing)
 - [License & Contact](#license--contact)
@@ -25,6 +25,59 @@
 > - Designed and implemented as part of an internship, demonstrating enterprise-level backend development.
 
 ---
+## Security/auth users roles & permissions
+
+- **Overview:** Authentication is implemented using JSON Web Tokens (JWT). Authorization is enforced at the controller level using Spring Security `@PreAuthorize` annotations and SpEL expressions. The security model uses a small role set plus fine-grained permission checks; ownership checks rely on values available on the authenticated `principal` (e.g., `principal.userId`).
+
+- **How to authenticate requests**
+    - Include the JWT in the `Authorization` header for protected endpoints:
+      ```
+      Authorization: Bearer <JWT>
+      ```
+
+- **Auth endpoints (login / refresh / register)**
+    - `POST /auth/login` — authenticates a user using `LoginRequestDTO` and returns `LoginResponseDTO` (authentication result returned by `AuthenticationService.authenticate(...)`).
+    - `POST /auth/refresh` — accepts `RefreshTokenRequestDTO` and returns `LoginResponseDTO` with refreshed credentials (handled by `AuthenticationService.refresh(...)`).
+    - `POST /auth/register` — registers a new user (`UserRegistrationDTO`) and returns `UserRegistrationResponseDTO` (creates account via `AuthenticationService.register(...)`).
+    - **Notes:** callers must supply valid request bodies; responses are DTOs implemented in the security layer and contain the authentication payload as implemented in the project.
+
+- **Roles & permissions**
+    - Roles used: `MANAGER`, `STAFF`, `USER`.
+    - Permission strings used in code (checked via `hasPermission(...)`):  
+      `ADD_BOOK_DATA`, `UPLOAD_CSV`, `ADD_INFORMATION`, `REMOVE_INFORMATION`, `REMOVE_BOOK`, `ADD_BOOK_INSTANCE`, `GENERATE_REPORT`, `CREATE_ACCOUNT`, `UPDATE_ACCOUNT`, `REMOVE_ACCOUNT`, plus others used in controller annotations.
+    - Pattern: high-trust operations require `MANAGER` or a `STAFF` user with a specific permission; many read operations are more permissive.
+
+- **Principal / ownership checks**
+    - SpEL ownership checks appear in multiple controllers, for example:
+        - `@PreAuthorize("hasRole('USER') AND #paymentRequestDTO.userId.equals(authentication.principal.userId)")` (create payment)
+        - `@PreAuthorize("authentication.principal.userId.equals(@paymentService.getUserByPaymentId(#id).id) OR hasRole('STAFF')")` (get payment)
+        - `@PreAuthorize("authentication.principal.userId == #id OR hasRole('STAFF')")` (get user by id)
+    - These checks require the security principal to expose `userId` for ownership validation.
+
+- **Examples of endpoint → security requirements (exactly from controller annotations)**
+    - `POST /books` — `@PreAuthorize("hasRole('MANAGER') OR hasPermission('ROLE_STAFF', 'ADD_BOOK_DATA')")`
+    - `PUT /books/{id}` — `@PreAuthorize("hasRole('STAFF')")`
+    - `DELETE /books/{id}` — `@PreAuthorize("hasRole('MANAGER') OR hasPermission('ROLE_STAFF', 'REMOVE_BOOK')")`
+    - `POST /books/csv` — `@PreAuthorize("hasRole('MANAGER') OR hasPermission('ROLE_STAFF', 'UPLOAD_CSV')")`
+    - `GET /book-instances/{id}` — `@PreAuthorize("hasAnyRole('USER','STAFF')")`
+    - `POST /book-instances` — `@PreAuthorize("hasRole('MANAGER') OR hasPermission('ROLE_STAFF', 'ADD_BOOK_INSTANCE')")`
+    - `PUT /book-instances/{id}` — `@PreAuthorize("hasRole('STAFF')")`
+    - `DELETE /book-instances/{id}` — `@PreAuthorize("hasRole('MANAGER') OR hasPermission('ROLE_STAFF', 'REMOVE_INFORMATION')")`
+    - `GET /reports/sales` — `@PreAuthorize("hasPermission('ANY', 'GENERATE_REPORT')")`
+    - `POST /payments` — `@PreAuthorize("hasRole('USER') AND #paymentRequestDTO.userId.equals(authentication.principal.userId)")`
+    - `GET /payments/{id}` — owner or staff as shown above.
+
+- **Public (no-auth) endpoints**
+    - Some read endpoints are explicitly public (`@PermitAll`), for example:
+        - `GET /books` (list)
+        - `GET /books/{id}` (details)
+        - `GET /books/{id}/cover-image`
+        - `GET /publishers/{id}`
+
+- **Failure modes**
+    - Missing/invalid JWT → `401 Unauthorized`.
+    - Valid JWT but insufficient role/permission → `403 Forbidden`.
+    - Ownership SpEL mismatch → `403 Forbidden`.
 
 ## API Endpoints (CRUD)
 
@@ -368,61 +421,6 @@ Errors return example:
   "status": 404
 }
 ```
-
-## Security/auth users roles & permissions
-
-- **Overview:** Authentication is implemented using JSON Web Tokens (JWT). Authorization is enforced at the controller level using Spring Security `@PreAuthorize` annotations and SpEL expressions. The security model uses a small role set plus fine-grained permission checks; ownership checks rely on values available on the authenticated `principal` (e.g., `principal.userId`).
-
-- **How to authenticate requests**
-    - Include the JWT in the `Authorization` header for protected endpoints:
-      ```
-      Authorization: Bearer <JWT>
-      ```
-
-- **Auth endpoints (login / refresh / register)**
-    - `POST /auth/login` — authenticates a user using `LoginRequestDTO` and returns `LoginResponseDTO` (authentication result returned by `AuthenticationService.authenticate(...)`).
-    - `POST /auth/refresh` — accepts `RefreshTokenRequestDTO` and returns `LoginResponseDTO` with refreshed credentials (handled by `AuthenticationService.refresh(...)`).
-    - `POST /auth/register` — registers a new user (`UserRegistrationDTO`) and returns `UserRegistrationResponseDTO` (creates account via `AuthenticationService.register(...)`).
-    - **Notes:** callers must supply valid request bodies; responses are DTOs implemented in the security layer and contain the authentication payload as implemented in the project.
-
-- **Roles & permissions**
-    - Roles used: `MANAGER`, `STAFF`, `USER`.
-    - Permission strings used in code (checked via `hasPermission(...)`):  
-      `ADD_BOOK_DATA`, `UPLOAD_CSV`, `ADD_INFORMATION`, `REMOVE_INFORMATION`, `REMOVE_BOOK`, `ADD_BOOK_INSTANCE`, `GENERATE_REPORT`, `CREATE_ACCOUNT`, `UPDATE_ACCOUNT`, `REMOVE_ACCOUNT`, plus others used in controller annotations.
-    - Pattern: high-trust operations require `MANAGER` or a `STAFF` user with a specific permission; many read operations are more permissive.
-
-- **Principal / ownership checks**
-    - SpEL ownership checks appear in multiple controllers, for example:
-        - `@PreAuthorize("hasRole('USER') AND #paymentRequestDTO.userId.equals(authentication.principal.userId)")` (create payment)
-        - `@PreAuthorize("authentication.principal.userId.equals(@paymentService.getUserByPaymentId(#id).id) OR hasRole('STAFF')")` (get payment)
-        - `@PreAuthorize("authentication.principal.userId == #id OR hasRole('STAFF')")` (get user by id)
-    - These checks require the security principal to expose `userId` for ownership validation.
-
-- **Examples of endpoint → security requirements (exactly from controller annotations)**
-    - `POST /books` — `@PreAuthorize("hasRole('MANAGER') OR hasPermission('ROLE_STAFF', 'ADD_BOOK_DATA')")`
-    - `PUT /books/{id}` — `@PreAuthorize("hasRole('STAFF')")`
-    - `DELETE /books/{id}` — `@PreAuthorize("hasRole('MANAGER') OR hasPermission('ROLE_STAFF', 'REMOVE_BOOK')")`
-    - `POST /books/csv` — `@PreAuthorize("hasRole('MANAGER') OR hasPermission('ROLE_STAFF', 'UPLOAD_CSV')")`
-    - `GET /book-instances/{id}` — `@PreAuthorize("hasAnyRole('USER','STAFF')")`
-    - `POST /book-instances` — `@PreAuthorize("hasRole('MANAGER') OR hasPermission('ROLE_STAFF', 'ADD_BOOK_INSTANCE')")`
-    - `PUT /book-instances/{id}` — `@PreAuthorize("hasRole('STAFF')")`
-    - `DELETE /book-instances/{id}` — `@PreAuthorize("hasRole('MANAGER') OR hasPermission('ROLE_STAFF', 'REMOVE_INFORMATION')")`
-    - `GET /reports/sales` — `@PreAuthorize("hasPermission('ANY', 'GENERATE_REPORT')")`
-    - `POST /payments` — `@PreAuthorize("hasRole('USER') AND #paymentRequestDTO.userId.equals(authentication.principal.userId)")`
-    - `GET /payments/{id}` — owner or staff as shown above.
-
-- **Public (no-auth) endpoints**
-    - Some read endpoints are explicitly public (`@PermitAll`), for example:
-        - `GET /books` (list)
-        - `GET /books/{id}` (details)
-        - `GET /books/{id}/cover-image`
-        - `GET /publishers/{id}`
-
-- **Failure modes**
-    - Missing/invalid JWT → `401 Unauthorized`.
-    - Valid JWT but insufficient role/permission → `403 Forbidden`.
-    - Ownership SpEL mismatch → `403 Forbidden`.
-
 
 ## Report Generation
 
