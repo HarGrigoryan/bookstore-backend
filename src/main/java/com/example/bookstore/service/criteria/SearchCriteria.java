@@ -13,6 +13,12 @@ public class SearchCriteria {
     private int page;
     private int size;
 
+    enum SortDirection {
+        DESC,
+        ASC
+    }
+
+    private SortDirection sortDirection;
 
     public PageRequest buildPageRequest() {
         int pageNumber = Math.max(page, 0);

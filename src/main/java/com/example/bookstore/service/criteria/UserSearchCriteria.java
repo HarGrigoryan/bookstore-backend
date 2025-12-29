@@ -28,7 +28,12 @@ public class UserSearchCriteria extends SearchCriteria {
     @Override
     public PageRequest buildPageRequest() {
         PageRequest pageRequest = super.buildPageRequest();
-        return pageRequest.withSort(Sort.by(sortBy).descending());
+        if(getSortDirection().equals(SortDirection.ASC))
+            return pageRequest.withSort(
+                    Sort.by(sortBy).ascending()
+            );
+        return pageRequest.withSort(
+                Sort.by(sortBy).descending());
     }
 
 

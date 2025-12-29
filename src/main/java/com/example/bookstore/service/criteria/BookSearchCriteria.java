@@ -38,14 +38,15 @@ public class BookSearchCriteria extends SearchCriteria {
     private Integer awardYear;
     private String sortBy = "title";
 
-
     @Override
     public PageRequest buildPageRequest() {
         PageRequest pageRequest = super.buildPageRequest();
-
+        if(getSortDirection().equals(SortDirection.ASC))
+            return pageRequest.withSort(
+                    Sort.by(sortBy).ascending()
+            );
         return pageRequest.withSort(
-                Sort.by(sortBy).descending()
-        );
+                Sort.by(sortBy).descending());
     }
 
 }

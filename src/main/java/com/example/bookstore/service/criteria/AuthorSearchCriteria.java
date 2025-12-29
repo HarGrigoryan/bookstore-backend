@@ -12,10 +12,16 @@ public class AuthorSearchCriteria extends SearchCriteria{
     private String fullName;
     private Boolean isOnGoodreads;
 
+    private static final String sortBy = "fullName";
+
     @Override
     public PageRequest buildPageRequest() {
         PageRequest pageRequest = super.buildPageRequest();
-
-        return pageRequest.withSort(Sort.by("fullName"));
+        if(getSortDirection().equals(SortDirection.ASC))
+            return pageRequest.withSort(
+                    Sort.by(sortBy).ascending()
+            );
+        return pageRequest.withSort(
+                Sort.by(sortBy).descending());
     }
 }
