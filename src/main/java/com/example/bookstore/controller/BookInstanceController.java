@@ -5,6 +5,7 @@ import com.example.bookstore.service.dto.BookInstanceDTO;
 import com.example.bookstore.service.dto.BookInstanceRequestDTO;
 import com.example.bookstore.service.BookInstanceService;
 import com.example.bookstore.service.dto.PageResponseDTO;
+import jakarta.annotation.security.PermitAll;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -30,7 +31,7 @@ public class BookInstanceController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('STAFF')")
+    @PermitAll
     public PageResponseDTO<BookInstanceDTO> getAll(BookInstanceSearchCriteria criteria) {
         return bookInstanceService.getAll(criteria);
     }

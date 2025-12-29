@@ -18,7 +18,7 @@ public class SearchCriteria {
         ASC
     }
 
-    private SortDirection sortDirection;
+    private SortDirection sortDirection = SortDirection.DESC;
 
     public PageRequest buildPageRequest() {
         int pageNumber = Math.max(page, 0);
