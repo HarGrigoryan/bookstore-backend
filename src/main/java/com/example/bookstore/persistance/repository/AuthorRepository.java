@@ -40,8 +40,10 @@ public interface AuthorRepository extends JpaRepository<Author, Long> {
                 a.id, a.fullName, a.isOnGoodreads
                 )
         FROM Author a
+        LEFT JOIN a.books ba
         WHERE (:#{#authorSearchCriteria.fullName} IS NULL OR LOWER(a.fullName) LIKE LOWER(CONCAT('%',:#{#authorSearchCriteria.fullName},'%')) )
         AND (:#{#authorSearchCriteria.isOnGoodreads} IS NULL OR a.isOnGoodreads = :#{#authorSearchCriteria.isOnGoodreads})
+        AND (:#{#authorSearchCriteria.bookId} IS NULL OR ba.book.id = :#{#authorSearchCriteria.bookId})
         """)
     Page<AuthorDTO> findAll(AuthorSearchCriteria authorSearchCriteria, Pageable pageable);
 }

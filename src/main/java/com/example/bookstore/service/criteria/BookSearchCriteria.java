@@ -21,6 +21,7 @@ public class BookSearchCriteria extends SearchCriteria {
     private LocalDate firstPublishDate =  LocalDate.of(1,1,1);
     private String authorName;
     private AuthorRole authorRole;
+    private Long authorId;
     private Format format;
     private String isbn;
     private String languageName;

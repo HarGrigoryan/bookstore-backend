@@ -11,6 +11,7 @@ public class AuthorSearchCriteria extends SearchCriteria{
 
     private String fullName;
     private Boolean isOnGoodreads;
+    private Long bookId;
 
     private static final String sortBy = "fullName";
 

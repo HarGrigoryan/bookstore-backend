@@ -59,6 +59,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
       LEFT JOIN b.language l
     WHERE
       ( :#{#criteria.title} IS NULL OR b.title LIKE CONCAT('%', :#{#criteria.title}, '%') )
+      AND ( :#{#criteria.authorId} IS NULL OR ba.author.id = :#{#criteria.authorId} )
       AND ( :#{#criteria.authorName} IS NULL OR LOWER(a.fullName) LIKE LOWER(CONCAT('%', :#{#criteria.authorName}, '%')) )
       AND ( :#{#criteria.authorRole} IS NULL OR ba.authorRole = :#{#criteria.authorRole} )
       AND ( :#{#criteria.format}  IS NULL OR b.format = :#{#criteria.format} )
