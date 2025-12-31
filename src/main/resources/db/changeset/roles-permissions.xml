@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="insert roles" author="HarGrigoryan">
+        <sql>
+            INSERT INTO role(name) VALUES
+                                       ('ROLE_USER'),
+                                       ('ROLE_STAFF'),
+                                       ('ROLE_MANAGER');
+        </sql>
+    </changeSet>
+
+    <changeSet id="insert permissions" author="HarGrigoryan">
+        <sql>
+            INSERT INTO permission (name) VALUES
+                                              ('UPLOAD_CSV'),
+                                              ('CREATE_ACCOUNT'),
+                                              ('UPDATE_ACCOUNT'),
+                                              ('ADD_BOOK_INSTANCE'),
+                                              ('ADD_BOOK_DATA'),
+                                              ('ADD_INFORMATION'),
+                                              ('REMOVE_ACCOUNT'),
+                                              ('REMOVE_BOOK'),
+                                              ('REMOVE_INFORMATION'),
+                                              ('UPDATE_COUPON'),
+                                              ('REMOVE_COUPON'),
+                                              ('CREATE_COUPON'),
+                                              ('VIEW_COUPON'),
+                                              ('GENERATE_REPORT');
+        </sql>
+    </changeSet>
+</databaseChangeLog>
