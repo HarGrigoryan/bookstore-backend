@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -54,6 +55,6 @@ public class LanguageService {
 
     public List<LanguageDTO> getAll() {
         List<Language> languages = languageRepository.findAll();
-        return languages.stream().map(languageMapper::entityToDto).collect(Collectors.toList());
+        return languages.stream().sorted(Comparator.comparing(Language::getLanguage)).map(languageMapper::entityToDto).collect(Collectors.toList());
     }
 }
