@@ -42,11 +42,16 @@ public class BookController {
         return bookService.getBookByBookId(bookId);
     }
 
-    @PermitAll
     @GetMapping("/{id}/authors")
     @PreAuthorize("hasAnyRole('USER', 'STAFF')")
     public List<AuthorResponseDTO> getAuthors(@PathVariable Long id) {
         return bookService.getAuthors(id);
+    }
+
+    @GetMapping("/{id}/characters")
+    @PreAuthorize("hasAnyRole('USER', 'STAFF')")
+    public List<CharacterDTO> getCharacters(@PathVariable Long id) {
+        return bookService.getCharacters(id);
     }
 
     @GetMapping

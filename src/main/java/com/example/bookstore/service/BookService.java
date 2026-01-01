@@ -266,4 +266,10 @@ public class BookService {
             this.deleteBookById(bookId);
         }
     }
+
+    public List<CharacterDTO> getCharacters(Long id) {
+       if (!bookRepository.existsById(id))
+            throw new EntityNotFoundException("Book", id);
+        return bookRepository.findCharacters(id);
+    }
 }

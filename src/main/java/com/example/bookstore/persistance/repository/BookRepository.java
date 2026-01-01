@@ -4,6 +4,7 @@ import com.example.bookstore.persistance.entity.Book;
 import com.example.bookstore.service.criteria.BookSearchCriteria;
 import com.example.bookstore.service.dto.BookSearchResponseDTO;
 import com.example.bookstore.service.dto.AuthorResponseDTO;
+import com.example.bookstore.service.dto.CharacterDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -58,7 +59,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
       LEFT JOIN b.publisher p
       LEFT JOIN b.language l
     WHERE
-      ( :#{#criteria.title} IS NULL OR b.title LIKE CONCAT('%', :#{#criteria.title}, '%') )
+      ( :#{#criteria.title} IS NULL OR LOWER(b.title) LIKE LOWER(CONCAT('%', :#{#criteria.title}, '%')) )
       AND ( :#{#criteria.authorId} IS NULL OR ba.author.id = :#{#criteria.authorId} )
       AND ( :#{#criteria.authorName} IS NULL OR LOWER(a.fullName) LIKE LOWER(CONCAT('%', :#{#criteria.authorName}, '%')) )
       AND ( :#{#criteria.authorRole} IS NULL OR ba.authorRole = :#{#criteria.authorRole} )
@@ -84,5 +85,9 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             Pageable pageable
     );
 
-
+    @Query("SELECT new com.example.bookstore.service.dto.CharacterDTO(" +
+            "c.id, c.fullName, c.comment) " +
+            "FROM BookCharacter bc JOIN bc.character c " +
+            "WHERE bc.book.id = :id")
+    List<CharacterDTO> findCharacters(Long id);
 }
