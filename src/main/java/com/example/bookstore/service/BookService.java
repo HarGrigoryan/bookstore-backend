@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -270,6 +271,16 @@ public class BookService {
     public List<CharacterDTO> getCharacters(Long id) {
        if (!bookRepository.existsById(id))
             throw new EntityNotFoundException("Book", id);
-        return bookRepository.findCharacters(id);
+        return bookRepository.findCharacters(id).stream()
+                .sorted(Comparator.comparing(CharacterDTO::getFullName))
+                .toList();
+    }
+
+    public List<GenreDTO> getGenres(Long id) {
+        if (!bookRepository.existsById(id))
+            throw new EntityNotFoundException("Book", id);
+        return bookRepository.findGenres(id).stream()
+                .sorted(Comparator.comparing(GenreDTO::getName))
+                .toList();
     }
 }

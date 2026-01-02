@@ -5,6 +5,7 @@ import com.example.bookstore.service.criteria.BookSearchCriteria;
 import com.example.bookstore.service.dto.BookSearchResponseDTO;
 import com.example.bookstore.service.dto.AuthorResponseDTO;
 import com.example.bookstore.service.dto.CharacterDTO;
+import com.example.bookstore.service.dto.GenreDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -90,4 +91,12 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             "FROM BookCharacter bc JOIN bc.character c " +
             "WHERE bc.book.id = :id")
     List<CharacterDTO> findCharacters(Long id);
+
+    @Query("""
+        SELECT new com.example.bookstore.service.dto.GenreDTO(
+            g.id, g.name  )
+        FROM BookGenre bg JOIN bg.genre g
+        WHERE bg.book.id = :id
+    """)
+    List<GenreDTO> findGenres(Long id);
 }

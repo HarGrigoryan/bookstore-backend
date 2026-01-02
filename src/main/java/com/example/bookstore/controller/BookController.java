@@ -54,6 +54,12 @@ public class BookController {
         return bookService.getCharacters(id);
     }
 
+    @GetMapping("/{id}/genres")
+    @PreAuthorize("hasAnyRole('USER', 'STAFF')")
+    public List<GenreDTO> getGenres(@PathVariable Long id) {
+        return bookService.getGenres(id);
+    }
+
     @GetMapping
     @PermitAll
     public PageResponseDTO<BookSearchResponseDTO> getAll(BookSearchCriteria criteria) {
