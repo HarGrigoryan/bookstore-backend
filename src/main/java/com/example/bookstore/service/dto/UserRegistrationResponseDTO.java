@@ -10,17 +10,17 @@ public class UserRegistrationResponseDTO {
 
     private String accessToken;
     private String refreshToken;
-    private Long id;
+    private Long userId;
     private String firstname;
     private String lastname;
-    private String email;
+    private String username;
     private Long createdAt;
     private Long updatedAt;
 
     public static UserRegistrationResponseDTO toDTO(User user) {
         UserRegistrationResponseDTO dto = new UserRegistrationResponseDTO();
-        dto.setId(user.getId());
-        dto.setEmail(user.getEmail());
+        dto.setUserId(user.getId());
+        dto.setUsername(user.getEmail());
         dto.setFirstname(user.getFirstname());
         dto.setLastname(user.getLastname());
         dto.setCreatedAt(user.getCreatedAt().toEpochMilli());
