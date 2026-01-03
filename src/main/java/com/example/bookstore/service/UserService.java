@@ -8,6 +8,7 @@ import com.example.bookstore.persistance.entity.*;
 import com.example.bookstore.persistance.repository.*;
 import com.example.bookstore.service.criteria.UserSearchCriteria;
 import com.example.bookstore.service.dto.*;
+import com.example.bookstore.service.mapper.UserMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import com.example.bookstore.exception.ResourceAlreadyUsedException;
@@ -27,6 +28,7 @@ public class UserService {
     private final UserRoleRepository userRoleRepository;
     private final UserRolePermissionRepository userRolePermissionRepository;
     private final PermissionRepository permissionRepository;
+    private final UserMapper userMapper;
 
     @Transactional
     public UserDTO createUser(UserCreateDTO userCreateDTO) {
@@ -47,7 +49,7 @@ public class UserService {
         user.setEnabled(true);
         userRepository.save(user);
         roles.forEach(r -> assignRole(user, r));
-        return UserDTO.toDTO(user);
+        return UserDTO.toSimpleDTO(user);
     }
 
     public PageResponseDTO<UserSearchResponseDTO> getAllUsers(UserSearchCriteria criteria) {
@@ -60,7 +62,7 @@ public class UserService {
         final User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User", id));
 
-        return UserDTO.toDTO(user);
+        return userMapper.entityToDto(user);
     }
 
     @Transactional
@@ -72,7 +74,7 @@ public class UserService {
         user.setLastname(updateDto.getLastname());
         user.setEnabled(updateDto.isEnabled());
 
-        return UserDTO.toDTO(userRepository.save(user));
+        return UserDTO.toSimpleDTO(userRepository.save(user));
     }
 
     public void deleteUser(Long id) {
@@ -85,7 +87,7 @@ public class UserService {
     public UserDTO changePassword(Long id,  UserPasswordChangeRequestDTO userPasswordChangeRequestDTO) {
         User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User with id '%s' not found".formatted(id)));
         user.setPassword(passwordEncoder.encode(userPasswordChangeRequestDTO.getNewPassword()));
-        return UserDTO.toDTO(userRepository.save(user));
+        return UserDTO.toSimpleDTO(userRepository.save(user));
     }
 
     public void assignRole(User user, Role role)

@@ -62,6 +62,9 @@ public class AuthenticationService {
         final String refreshToken = jwtUtil.generateRefreshToken(userDetails);
 
         return LoginResponseDTO.builder()
+                .withUserId(userRepository.findByEmail(userDetails.getUsername())
+                        .orElseThrow(() -> new EntityNotFoundException("User not found"))
+                        .getId())
                 .withUsername(userDetails.getUsername())
                 .withAccessToken(accessToken)
                 .withRefreshToken(refreshToken)
@@ -79,6 +82,10 @@ public class AuthenticationService {
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
         String newAccessToken = jwtUtil.generateAccessToken(userDetails);
         return LoginResponseDTO.builder().
+                withUserId(userRepository.findByEmail(userDetails.getUsername())
+                        .orElseThrow(() -> new EntityNotFoundException("User not found"))
+                        .getId()
+                ).
                 withUsername(username).
                 withAccessToken(newAccessToken)
                 .withRefreshToken(existingRefreshToken)

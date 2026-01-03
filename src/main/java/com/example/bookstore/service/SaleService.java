@@ -83,7 +83,7 @@ public class SaleService {
     }
 
     public UserDTO getUserBySaleId(Long id) {
-        return UserDTO.toDTO(saleRepository.findUserBySaleId(id).orElseThrow(() -> new EntityNotFoundException("No user associated with sale id [%s] found".formatted(id))));
+        return UserDTO.toSimpleDTO(saleRepository.findUserBySaleId(id).orElseThrow(() -> new EntityNotFoundException("No user associated with sale id [%s] found".formatted(id))));
     }
 
     private Coupon validateCoupon(String couponCode, Long userId) {

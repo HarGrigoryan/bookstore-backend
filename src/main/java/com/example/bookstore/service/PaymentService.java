@@ -1,9 +1,7 @@
 package com.example.bookstore.service;
 
-import com.example.bookstore.enums.PaymentCurrency;
 import com.example.bookstore.enums.PaymentStatus;
 import com.example.bookstore.exception.EntityNotFoundException;
-import com.example.bookstore.exception.PaymentFailedException;
 import com.example.bookstore.persistance.entity.Payment;
 import com.example.bookstore.persistance.entity.User;
 import com.example.bookstore.persistance.repository.PaymentRepository;
@@ -64,7 +62,7 @@ public class PaymentService {
     {
         Payment payment = paymentRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Payment", id));
         User user = payment.getUser();
-        return UserDTO.toDTO(user);
+        return UserDTO.toSimpleDTO(user);
     }
 
     public PaymentDTO getById(Long id)

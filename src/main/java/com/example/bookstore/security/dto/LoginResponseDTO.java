@@ -9,6 +9,7 @@ import lombok.Setter;
 @Builder(setterPrefix = "with")
 public class LoginResponseDTO {
 
+    private Long userId;
     private String username;
     private String accessToken;
     private String refreshToken;

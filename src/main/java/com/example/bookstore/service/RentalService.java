@@ -109,6 +109,6 @@ public class RentalService {
     }
 
     public UserDTO getUserByRentalId(Long rentalId) {
-        return UserDTO.toDTO(rentalRepository.findUserByRentalId(rentalId).orElseThrow(() -> new EntityNotFoundException("No user associated with rental id [%s] found".formatted(rentalId))));
+        return UserDTO.toSimpleDTO(rentalRepository.findUserByRentalId(rentalId).orElseThrow(() -> new EntityNotFoundException("No user associated with rental id [%s] found".formatted(rentalId))));
     }
 }

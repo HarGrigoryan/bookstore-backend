@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -31,4 +32,10 @@ public interface UserRolePermissionRepository extends JpaRepository<UserRolePerm
     AND ur.role = :role
 """)
     Optional<UserRolePermission> findByUserIdAndRoleAndPermission(@Param("userId") Long userId, @Param("role") Role role, @Param("permission") Permission permission);
+
+    @Query("""
+        SELECT urp FROM UserRolePermission urp
+        WHERE urp.userRole.user.id = :userId
+        """)
+    List<UserRolePermission> findByUserId(long userId);
 }
