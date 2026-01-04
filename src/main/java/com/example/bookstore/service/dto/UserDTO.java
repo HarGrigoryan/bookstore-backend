@@ -23,6 +23,7 @@ public class UserDTO {
     private String email;
     private LocalDate createdAt;
     private LocalDate updatedAt;
+    private Boolean enabled;
     private List<RoleName> roles;
     private Map<RoleName, List<PermissionName>> permissions;
 
@@ -35,7 +36,7 @@ public class UserDTO {
         userDTO.setEmail(user.getEmail());
         userDTO.setCreatedAt(LocalDate.ofInstant(user.getCreatedAt(), ZoneId.systemDefault()));
         userDTO.setUpdatedAt(LocalDate.ofInstant(user.getUpdatedAt(), ZoneId.systemDefault()));
-
+        userDTO.setEnabled(user.isEnabled());
         return userDTO;
     }
 }

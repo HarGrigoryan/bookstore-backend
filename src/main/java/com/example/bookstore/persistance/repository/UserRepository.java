@@ -48,9 +48,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
             u.updatedAt
             )
     FROM User u
-    LEFT JOIN u.roles ur ON (:#{#criteria.roleName} IS NULL OR ur.role.name = :#{#criteria.roleName})
-    LEFT JOIN ur.userRolePermissions urp ON (:#{#criteria.permissionName} IS NULL OR urp.permission.name = :#{#criteria.permissionName})
-    WHERE (:#{#criteria.firstname} IS NULL OR LOWER(u.firstname) LIKE CONCAT( '%', LOWER(:#{#criteria.firstname}), '%'))
+    LEFT JOIN u.roles ur
+    LEFT JOIN ur.userRolePermissions urp
+    ON (:#{#criteria.permissionName} IS NULL OR urp.permission.name = :#{#criteria.permissionName})
+    WHERE (:#{#criteria.roleName} IS NULL OR ur.role.name = :#{#criteria.roleName})
+    AND (:#{#criteria.firstname} IS NULL OR LOWER(u.firstname) LIKE CONCAT( '%', LOWER(:#{#criteria.firstname}), '%'))
     AND (:#{#criteria.lastname} IS NULL OR LOWER(u.lastname) LIKE CONCAT('%', LOWER(:#{#criteria.lastname}), '%'))
     AND (:#{#criteria.email} IS NULL OR LOWER(u.email) LIKE CONCAT('%', LOWER(:#{#criteria.email}), '%'))
     AND (:#{#criteria.enabled} IS NULL OR u.enabled = :#{#criteria.enabled})

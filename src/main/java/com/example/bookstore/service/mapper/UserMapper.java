@@ -39,6 +39,7 @@ public class UserMapper implements Mapper<User, UserDTO> {
                 .email(entity.getEmail())
                 .createdAt(LocalDate.ofInstant(entity.getCreatedAt(), ZoneId.systemDefault()))
                 .updatedAt(LocalDate.ofInstant(entity.getUpdatedAt(), ZoneId.systemDefault()))
+                .enabled(entity.isEnabled())
                 .roles(userRoles.stream().map(ur -> ur.getRole().getName()).collect(Collectors.toList()))
                 .permissions(
                         userRolePermissions.stream().collect(
