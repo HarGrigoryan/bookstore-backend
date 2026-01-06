@@ -14,6 +14,7 @@ import com.example.bookstore.service.mapper.BookCreateResponseDtoMapper;
 import com.example.bookstore.service.dto.AuthorResponseDTO;
 import com.example.bookstore.service.dto.BookCreateDTO;
 import com.example.bookstore.service.dto.BookUpdateRequestDTO;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -96,6 +97,7 @@ public class BookService {
         bookRepository.delete(book);
     }
 
+    @Transactional
     public BookCreateResponseDto createBook(@Valid BookCreateDTO bookCreateDto) {
         String bookId = bookCreateDto.getBookId();
         Book book = bookRepository.findByBookId(bookId);
@@ -112,14 +114,8 @@ public class BookService {
         book.setEdition(bookCreateDto.getEdition());
         book.setPrice(bookCreateDto.getPrice());
         book.setPageNumber(bookCreateDto.getPageNumber());
-        Language language = languageRepository.findById(bookCreateDto.getLanguageId()).orElse(null);
-        if(language == null)
-            throw new EntityNotFoundException("Language", bookCreateDto.getLanguageId());
-        book.setLanguage(language);
-        Publisher publisher = publisherRepository.findById(bookCreateDto.getPublisherId()).orElse(null);
-        if(publisher == null)
-            throw new EntityNotFoundException("Publisher", bookCreateDto.getPublisherId());
-        book.setPublisher(publisher);
+        handleLanguage(bookCreateDto.getLanguageId(), book);
+        handlePublisher(bookCreateDto.getPublisherId(), book);
         bookRepository.save(book);
         saveBookAuthors(bookCreateDto.getAuthorIds(), bookCreateDto.getAuthorRoles(), book);
         saveBookSettings(bookCreateDto.getSettingIds(), book);
@@ -138,6 +134,26 @@ public class BookService {
         return (new BookCreateResponseDtoMapper()).map(book);
     }
 
+    private void handleLanguage(Long languageId, Book book) {
+        Language language = null;
+        if(languageId != null) {
+            language = languageRepository.findById(languageId).orElse(null);
+            if (language == null)
+                throw new EntityNotFoundException("Language", languageId);
+        }
+        book.setLanguage(language);
+    }
+
+    private void handlePublisher(Long publisherId, Book book) {
+        Publisher publisher = null;
+        if(publisherId != null) {
+            publisher = publisherRepository.findById(publisherId).orElse(null);
+            if (publisher == null)
+                throw new EntityNotFoundException("Publisher", publisherId);
+        }
+        book.setPublisher(publisher);
+    }
+
     private void saveBookAwards(List<Long> awardIds, Book book) {
         List<Award> awards = awardRepository.findAllById(awardIds);
         if(awards.size() != awardIds.size())
@@ -154,6 +170,8 @@ public class BookService {
 
 
     private void saveBookSeries(Long seriesId, String seriesNumber, Book book) {
+        if(seriesId == null)
+            return;
         Series series = seriesRepository.findById(seriesId).orElse(null);
         if(series == null)
             throw new EntityNotFoundException("Series", seriesId);

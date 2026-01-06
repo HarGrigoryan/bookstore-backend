@@ -10,12 +10,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/series")
 @RequiredArgsConstructor
 public class SeriesController {
 
     private final SeriesService seriesService;
+
+    @PreAuthorize("hasRole('MANAGER') OR hasPermission('ROLE_STAFF', 'ADD_INFORMATION')")
+    @GetMapping
+    public List<SeriesDTO> getAllSeries() {
+        return seriesService.getAllSeries();
+    }
 
     @PermitAll
     @GetMapping("/{id}")

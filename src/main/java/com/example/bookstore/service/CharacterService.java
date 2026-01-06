@@ -11,6 +11,7 @@ import com.example.bookstore.service.mapper.CharacterMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -51,5 +52,12 @@ public class CharacterService {
         if(!dependentBookIds.isEmpty())
             throw new EntityDeletionException("Character", id, dependentBookIds);
         characterRepository.delete(character);
+    }
+
+    public List<CharacterDTO> getAllCharacters() {
+        return characterRepository.findAll().stream()
+                .map(characterMapper::entityToDto)
+                .sorted(Comparator.comparing(CharacterDTO::getFullName))
+                .toList();
     }
 }

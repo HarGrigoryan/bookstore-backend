@@ -11,8 +11,8 @@ import com.example.bookstore.service.mapper.SettingMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
-
 
 @Service
 @RequiredArgsConstructor
@@ -48,5 +48,12 @@ public class SettingService {
         if(!dependentBookIds.isEmpty())
             throw new EntityDeletionException("Setting", id, dependentBookIds);
         settingRepository.delete(setting);
+    }
+
+    public List<SettingDTO> getAllSettings() {
+        return settingRepository.findAll().stream()
+                .map(settingMapper::entityToDto)
+                .sorted(Comparator.comparing(SettingDTO::getName))
+                .toList();
     }
 }

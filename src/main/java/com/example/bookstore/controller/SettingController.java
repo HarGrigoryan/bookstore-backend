@@ -6,8 +6,11 @@ import com.example.bookstore.service.dto.SettingRequestDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/settings")
@@ -15,6 +18,12 @@ import org.springframework.web.bind.annotation.*;
 public class SettingController {
 
     private final SettingService settingService;
+
+    @GetMapping
+    @PreAuthorize("hasRole('MANAGER') OR hasPermission('ROLE_STAFF', 'ADD_INFORMATION')")
+    public ResponseEntity<List<SettingDTO>> getAllSettings() {
+        return ResponseEntity.ok(settingService.getAllSettings());
+    }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('STAFF', 'USER')")

@@ -11,6 +11,7 @@ import com.example.bookstore.service.mapper.AwardMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -50,4 +51,20 @@ public class AwardService {
             throw new EntityDeletionException("Author", id, dependentBookIds);
         awardRepository.delete(award);
     }
+
+    public List<AwardDTO> getAllAwards() {
+        return awardRepository.findAll().stream()
+                .map(awardMapper::entityToDto)
+                .sorted(
+                        Comparator
+                                .comparing(AwardDTO::getName)
+                                .thenComparing(
+                                        AwardDTO::getYear,
+                                        Comparator.nullsLast(Integer::compareTo)
+                                )
+                )
+                .toList();
+    }
+
+
 }

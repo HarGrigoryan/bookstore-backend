@@ -20,10 +20,16 @@ public class PublisherController {
 
     @GetMapping("/{id}/books")
     @PreAuthorize("hasAnyRole('STAFF', 'USER')")
-    public List<BookSearchResponseDTO> getPublishedBooks(@PathVariable Long id)
-    {
+    public List<BookSearchResponseDTO> getPublishedBooks(@PathVariable Long id) {
         return publisherService.getPublishedBooks(id);
     }
+
+    @GetMapping
+    @PreAuthorize("hasRole('MANAGER') OR hasPermission('ROLE_STAFF', 'ADD_INFORMATION')")
+    public List<PublisherDTO> getAllPublishers() {
+        return publisherService.getAllPublisher();
+    }
+
 
     @GetMapping("/{id}")
     @PermitAll

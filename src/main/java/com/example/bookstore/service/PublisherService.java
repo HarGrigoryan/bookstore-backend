@@ -11,6 +11,7 @@ import com.example.bookstore.service.mapper.PublisherMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -59,5 +60,12 @@ public class PublisherService {
         if (!dependentBookIds.isEmpty())
             throw new EntityDeletionException("Publisher", id, dependentBookIds);
         publisherRepository.delete(publisher);
+    }
+
+    public List<PublisherDTO> getAllPublisher() {
+        return publisherRepository.findAll().stream()
+                .map(publisherMapper::entityToDto)
+                .sorted(Comparator.comparing(PublisherDTO::getName))
+                .toList();
     }
 }

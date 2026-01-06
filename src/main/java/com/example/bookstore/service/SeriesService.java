@@ -11,6 +11,7 @@ import com.example.bookstore.service.mapper.SeriesMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -47,5 +48,12 @@ public class SeriesService {
         Series series = seriesRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Series", id));
         series.setName(seriesCreateRequestDTO.getName());
         return seriesMapper.entityToDto(seriesRepository.save(series));
+    }
+
+    public List<SeriesDTO> getAllSeries() {
+        return seriesRepository.findAll().stream()
+                .map(seriesMapper::entityToDto)
+                .sorted(Comparator.comparing(SeriesDTO::getName))
+                .toList();
     }
 }

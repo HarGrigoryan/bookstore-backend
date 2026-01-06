@@ -8,12 +8,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/awards")
 @RequiredArgsConstructor
 public class AwardController {
 
     private final AwardService awardService;
+
+    @GetMapping
+    @PreAuthorize("hasRole('MANAGER') OR hasPermission('ROLE_STAFF', 'ADD_INFORMATION')")
+    public ResponseEntity<List<AwardDTO>> getAllAwards() {
+        return ResponseEntity.ok(awardService.getAllAwards());
+    }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'STAFF')")
